@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+import wat
 from livekey import animate_commands
 
 __all__ = ['animate_commands']
