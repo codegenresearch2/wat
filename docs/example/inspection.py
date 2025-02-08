@@ -1,7 +1,4 @@
-from datetime import datetime
-from enum import Enum
-import re
-
+#!/usr/bin/env python3
 from pydantic import BaseModel
 import wat
 
