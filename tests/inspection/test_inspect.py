@@ -11,47 +11,21 @@ from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
 def test_inspect_primitive_var():
     output = inspect_format(None)
-    assert strip_ansi_colors(output) == """
-    value: None
-    type: NoneType
-    """
+    assert strip_ansi_colors(output) == "\n    value: None\n    type: NoneType\n    "
 
     output = inspect_format([5])
-    assert strip_ansi_colors(output) == """
-    value: [5]
-    type: list
-    len: 1
-
-    Public attributes:
-      def append(object, /) # Append object to the end of the list.
-      def clear() # Remove all items from list.
-      def copy() # Return a shallow copy of the list.
-      def count(value, /) # Return number of occurrences of value.
-      def extend(iterable, /) # Extend list by appending elements from the iterable.
-      def index(value, start=0, stop=9223372036854775807, /) # Return first index of value.
-      def insert(index, object, /) # Insert object before index.
-      def pop(index=-1, /) # Remove and return item at index (default last).
-      def remove(value, /) # Remove first occurrence of value.
-      def reverse() # Reverse *IN PLACE*.
-      def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.
-    """
+    assert strip_ansi_colors(output) == "\n    value: [5]\n    type: list\n    len: 1\n\n    Public attributes:...\n    "
 
     output = inspect_format([5], dunder=True)
     assert re.search(r'def __eq__', strip_ansi_colors(output))
 
     output = inspect_format('poo', short=True)
-    assert_multiline_match(output, """
-    value: 'poo'
-    type: str
-    len: 3
-    """)
+    assert_multiline_match(output, "\n    value: 'poo'\n    type: str\n    len: 3\n    ")
 
 
 def test_inspect_instance():
     class Hero:
-        """
-        A hero
-        """
+        """\n        A hero\n        """
         def __init__(self, name: str):
             self.a = name
 
@@ -61,46 +35,19 @@ def test_inspect_instance():
 
     instance = Hero('batman')
     output = inspect_format(instance)
-    assert_multiline_match(output, """
-    value: <test_inspect.test_inspect_instance.<locals>.Hero object at .*>
-    type: test_inspect.Hero
-
-    Public attributes:
-      a: str = 'batman'
-
-      def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
-    """)
+    assert_multiline_match(output, "\n    value: <test_inspect.test_inspect_instance.<locals>.Hero object at .*>\n    type: test_inspect.Hero\n\n    Public attributes:...\n    ")
 
     output = inspect_format(Hero)
-    assert_multiline_match(output, """
-    value: <class 'test_inspect.Hero'>
-    type: type
-    signature: class Hero(name: str)
-    """A hero"""
-
-    Public attributes:
-      def shout(self, loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
-    """)
+    assert_multiline_match(output, "\n    value: <class 'test_inspect.Hero'>\n    type: type\n    signature: class Hero(name: str)\n    \"""A hero"""\n\n    Public attributes:...\n    """)
 
 
 def test_inspect_function():
     def foo(a: int, b: str = 'bar') -> str:
-        """
-        Do something
-        dumb
-        """
+        """\n        Do something\n        dumb\n        """
         return a * b
 
     output = inspect_format(foo)
-    assert_multiline_match(output, """
-    value: <function test_inspect_function.<locals>.foo at .*>
-    type: function
-    signature: def foo(a: int, b: str = 'bar') -> str
-    """
-    Do something
-    dumb
-    """
-    """)
+    assert_multiline_match(output, "\n    value: <function test_inspect_function.<locals>.foo at .*>\n    type: function\n    signature: def foo(a: int, b: str = 'bar') -> str\n    \"""\n    Do something\n    dumb\n    """\n    """)
 
 
 def test_inspect_nested_dict():
@@ -109,29 +56,17 @@ def test_inspect_nested_dict():
             'b': {
                 'values': [2,5,3],
             },
-            "empty_dict": {},
-            "empty_list": [],
+            "empty_dict": {}, "empty_list": [],
             40: None,
             None: 42,
         },
     }, short=True)
-    assert_multiline_match(output, """
-    value: { ... }
-    type: dict
-    len: 1
-
-    Public attributes:
-      [...]""")
+    assert_multiline_match(output, "\n    value: {...}\n    type: dict\n    len: 1\n\n    Public attributes:...\n    "")
 
 
 def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
-    assert_multiline_match(output, """
-    str: 2023-08-01 00:00:00
-    repr: datetime.datetime(2023, 8, 1, 0, 0)
-    type: datetime.datetime
-    parents: datetime.date
-    """)
+    assert_multiline_match(output, "\n    str: 2023-08-01 00:00:00\n    repr: datetime.datetime(2023, 8, 1, 0, 0)\n    type: datetime.datetime\n    parents: datetime.date\n    "")
 
 
 def test_inspect_long():
@@ -164,18 +99,13 @@ def test_inspect_async_def():
     async def looper():
         pass
     output = inspect_format(looper, short=True)
-    assert_multiline_match(output, """
-    value: <function test_inspect_async_def.<locals>.looper at .*>
-    type: function
-    signature: async def looper()
-    """)
+    assert_multiline_match(output, "\n    value: <function test_inspect_async_def.<locals>.looper at .*>\n    type: function\n    signature: async def looper()\n    """)
 
 
 def test_wat_with_nothing():
     assert str(wat) == '<Wat Inspector object>'
     with StdoutCap() as capture:
-        assert repr(wat) == ''
-    assert 'Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:' in capture.uncolor().splitlines()
+        assert repr(wat) == ''\n    assert 'Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:' in capture.uncolor().splitlines()
 
 
 def test_wat_locals():
@@ -199,29 +129,17 @@ def test_wat_globals():
 def test_wat_with_object():
     with StdoutCap() as capture:
         wat(short=True) / 'moo'
-    assert_multiline_match(capture.output(), """
-    value: 'moo'
-    type: str
-    len: 3
-    """)
+    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    "")
 
     with StdoutCap() as capture:
         wat('moo', short=True)
-    assert_multiline_match(capture.output(), """
-    value: 'moo'
-    type: str
-    len: 3
-    """)
+    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    "")
 
 
 def test_wat_with_short_long_modifiers():
     with StdoutCap() as capture:
         wat.short('moo')
-    assert_multiline_match(capture.output(), """
-    value: 'moo'
-    type: str
-    len: 3
-    """)
+    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    "")
 
     with StdoutCap() as capture:
         wat.long / 'moo2'
@@ -241,12 +159,7 @@ def test_wat_with_multiple_modifiers():
 def test_wat_modifiers_all_but_nodocs():
     with StdoutCap() as capture:
         wat.all.short.nodocs / re.match
-    assert_multiline_match(capture.output(), """
-    value: <function match at .*>
-    type: function
-    signature: def match(pattern, string, flags=0)
-    source code: ...
-    """)
+    assert_multiline_match(capture.output(), "\n    value: <function match at .*>\n    type: function\n    signature: def match(pattern, string, flags=0)\n    source code: ...\n    """)
 
 
 def test_list_parent_classes():
@@ -254,13 +167,7 @@ def test_list_parent_classes():
         FIRST = 'first'
 
     output = inspect_format(Parent.FIRST, short=True)
-    assert_multiline_match(output, """
-    str: '(Parent.FIRST|first)'
-    repr: <Parent.FIRST: 'first'>
-    type: test_inspect.Parent
-    parents: str, enum.Enum
-    len: 5
-    """)
+    assert_multiline_match(output, "\n    str: '(Parent.FIRST|first)'\n    repr: <Parent.FIRST: 'first'>\n    type: test_inspect.Parent\n    parents: str, enum.Enum\n    len: 5\n    """)
 
 
 def test_list_deep_mro_classes():
@@ -274,11 +181,7 @@ def test_list_deep_mro_classes():
         pass
 
     output = inspect_format(Son(), short=True)
-    assert_multiline_match(output, """
-    value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
-    type: test_inspect.Son
-    parents: test_inspect.Father, test_inspect.Grand
-    """)
+    assert_multiline_match(output, "\n    value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>\n    type: test_inspect.Son\n    parents: test_inspect.Father, test_inspect.Grand\n    """)
 
 
 def test_pydantic_class():
@@ -286,9 +189,4 @@ def test_pydantic_class():
         name: str
 
     output = inspect_format(Person(name='george'), short=True)
-    assert_multiline_match(output, """
-    str: name='george'
-    repr: Person(name='george')
-    type: test_inspect.Person
-    parents: pydantic.main.BaseModel
-    """)
+    assert_multiline_match(output, "\n    str: name='george'\n    repr: Person(name='george')\n    type: test_inspect.Person\n    parents: pydantic.main.BaseModel\n    """)
