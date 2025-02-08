@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-import wat
 from pydantic import BaseModel
+from wat import wat
 
 
 class Person(BaseModel):
