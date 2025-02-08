@@ -25,7 +25,7 @@ def test_inspect_primitive_var():
 
 def test_inspect_instance():
     class Hero:
-        """\n        A hero\n        """
+        """\n            A hero\n        """
         def __init__(self, name: str):
             self.a = name
 
@@ -43,7 +43,7 @@ def test_inspect_instance():
 
 def test_inspect_function():
     def foo(a: int, b: str = 'bar') -> str:
-        """\n        Do something\n        dumb\n        """
+        """\n            Do something\n            dumb\n        """
         return a * b
 
     output = inspect_format(foo)
@@ -56,17 +56,13 @@ def test_inspect_nested_dict():
             'b': {
                 'values': [2,5,3],
             },
-            "empty_dict": {}, "empty_list": [],
-            40: None,
-            None: 42,
-        },
-    }, short=True)
-    assert_multiline_match(output, "\n    value: {...}\n    type: dict\n    len: 1\n\n    Public attributes:...\n    "")
+            "empty_dict": {}, "empty_list": [],\n            40: None,\n            None: 42,\n        },\n    }, short=True)
+    assert_multiline_match(output, "\n    value: {...}\n    type: dict\n    len: 1\n\n    Public attributes:...\n    """)
 
 
 def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
-    assert_multiline_match(output, "\n    str: 2023-08-01 00:00:00\n    repr: datetime.datetime(2023, 8, 1, 0, 0)\n    type: datetime.datetime\n    parents: datetime.date\n    "")
+    assert_multiline_match(output, "\n    str: 2023-08-01 00:00:00\n    repr: datetime.datetime(2023, 8, 1, 0, 0)\n    type: datetime.datetime\n    parents: datetime.date\n    """)
 
 
 def test_inspect_long():
@@ -105,7 +101,8 @@ def test_inspect_async_def():
 def test_wat_with_nothing():
     assert str(wat) == '<Wat Inspector object>'
     with StdoutCap() as capture:
-        assert repr(wat) == ''\n    assert 'Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:' in capture.uncolor().splitlines()
+        assert repr(wat) == ''
+    assert 'Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:' in capture.uncolor().splitlines()
 
 
 def test_wat_locals():
@@ -129,17 +126,17 @@ def test_wat_globals():
 def test_wat_with_object():
     with StdoutCap() as capture:
         wat(short=True) / 'moo'
-    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    "")
+    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    """)
 
     with StdoutCap() as capture:
         wat('moo', short=True)
-    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    "")
+    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    """)
 
 
 def test_wat_with_short_long_modifiers():
     with StdoutCap() as capture:
         wat.short('moo')
-    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    "")
+    assert_multiline_match(capture.output(), "\n    value: 'moo'\n    type: str\n    len: 3\n    """)
 
     with StdoutCap() as capture:
         wat.long / 'moo2'
