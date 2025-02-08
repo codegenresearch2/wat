@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 from livekey import animate_commands
 
 __all__ = ['animate_commands']
