@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import os
 import inspect as std_inspect
 import re
