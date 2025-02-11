@@ -16,8 +16,8 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         content = Path(dst_filename).read_text()
         assert old_code in content, f'cannot find current Insta-Load code in {dst_filename}'
         replaced_content = content.replace(old_code, new_code)
-        assert old_code not in replaced_content, 'old code still exists in the replaced content'
-        assert new_code in replaced_content, 'new code does not exist in the replaced content'
+        assert content.count(old_code) == replaced_content.count(old_code), 'old code count mismatch'
+        assert content.count(new_code) == replaced_content.count(new_code), 'new code count mismatch'
         replaced_contents.append(replaced_content)
 
     for i, dst_filename in enumerate(dst_filenames):
