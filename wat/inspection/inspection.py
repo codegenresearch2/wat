@@ -38,58 +38,50 @@ def inspect_format(
     all: bool = False,
 ) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
-    output: List[str] = []
+    return '\n'.join(_produce_inspect_lines(obj, config))
 
+
+def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
     repr_value: str = repr(obj)
     if repr_value == str(obj) or repr_value == _strip_color(str_value):
-        output.append(f'value: {str_value}')
+        yield f'value: {str_value}'
     else:
-        output.append(f'str: {str_value}')
-        output.append(f'repr: {repr_value}')
+        yield f'str: {str_value}'
+        yield f'repr: {repr_value}'
 
     str_type = _format_type(type(obj))
-    output.append(f'type: {str_type}')
+    yield f'type: {str_type}'
     parents = ', '.join(_get_parent_types(type(obj)))
     if parents:
-        output.append(f'parents: {parents}')
+        yield f'parents: {parents}'
 
     if callable(getattr(obj, '__len__', None)):
         try:
-            output.append(f'len: {_format_value(len(obj))}')
+            yield f'len: {_format_value(len(obj))}'
         except TypeError:
             pass
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj)
-        output.append(f'signature: {signature}')
+        yield f'signature: {signature}'
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
         if doc.count('\n') == 0:
-            output.append(f'"""{doc}"""')
+            yield f'"""{doc}"""'
         else:
-            output.extend([f'"""', doc, f'"""'])
+            yield f'"""\n{doc}\n"""'
 
     if config.code and (inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
-            output.append(f'source code:\n{source}')
+            yield f'source code:\n{source}'
 
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
-        output.extend(_render_attrs_section(attributes, config))
-
-    if sys.stdout.isatty() and _color_enabled():  # horizontal bar
-        terminal_width = os.get_terminal_size().columns
-        output.insert(0, '─' * terminal_width)
-        output.append('─' * terminal_width)
-
-    text = '\n'.join(line for line in output if line is not None)
-    if not _color_enabled():
-        text = _strip_color(text)
-    return text
+        yield from _render_attrs_section(attributes, config)
 
 
 def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
