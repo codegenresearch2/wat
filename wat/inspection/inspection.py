@@ -19,7 +19,7 @@ class InspectConfig:
 class InspectAttribute:
     name: str
     value: Any
-    type: Type
+    type_: Type
     callable: bool
     dunder: bool
     private: bool
@@ -188,7 +188,7 @@ def _render_attr_method(attr: InspectAttribute) -> str:
         return f'  {attr.name}(…)'
     if attr.doc:
         if attr.doc.count('\n') == 0:
-            return f'  {attr.signature}  # {attr.doc}'
+            return f'  {attr.signature} # {attr.doc}'  # Removed extra space before the comment
         else:
             return f'  {attr.signature}:\n"""\n{attr.doc}\n"""\n'
     else:
@@ -275,7 +275,7 @@ def _shorten_string(text: str) -> str:
         first_line = first_line + '…'
     if len(first_line) > 100:
         first_line = first_line[:100] + '…'
-    return first_line
+    return first_line + RESET
 
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
