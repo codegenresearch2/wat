@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 import wat
 from livekey import animate_commands
-import re
 
 commands = [
     'python',
     'import wat',
     'wat / {7}',
     'wat.short / (1,)',
-    'import re',
     'wat()',
     'wat / re',
     'wat.code / re.match',
