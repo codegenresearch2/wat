@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from livekey import animate_commands
 import re
+from wat import wat
 
 commands = [
     'python',
