@@ -6,22 +6,23 @@ from wat.inspection.insta.instaload import code
 
 def _regenerate(src_filename: str, dst_filenames: list[str]):
     old_code: str = code.decode()
-    replaced_contents: list[str] = []
+    new_code: str = dump_snippet(src_filename)
+    
+    if old_code == new_code:
+        print('Insta-Load code is up to date')
+        return
 
+    replaced_contents: list[str] = []
     for dst_filename in dst_filenames:
         content = Path(dst_filename).read_text()
         assert content.count(old_code) == 1, f'cannot find current Insta-Load code in {dst_filename}'
-        replaced_content = content.replace(old_code, dump_snippet(src_filename))
+        replaced_content = content.replace(old_code, new_code)
         replaced_contents.append(replaced_content)
-        assert replaced_content.count(dump_snippet(src_filename)) == 1, f'new code not found exactly once in {dst_filename}'
+        assert replaced_content.count(new_code) == 1, f'new code not found exactly once in {dst_filename}'
 
     for i, dst_filename in enumerate(dst_filenames):
-        Path(dst_filename).write_text(replaced_contents[i])
-        print(f'Code replaced in {dst_filename}')
-
-    new_code: str = dump_snippet(src_filename)
-    if old_code == new_code:
-        print('Insta-Load code is up to date')
+        Path(dst_filenames[i]).write_text(replaced_contents[i])
+        print(f'Code replaced in {dst_filenames[i]}')
 
 if __name__ == '__main__':
     _regenerate(sys.argv[1], sys.argv[2:])
