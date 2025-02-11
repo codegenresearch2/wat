@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import sys
 import zlib
-from typing import List
+from typing import List, Any, Dict, Optional, Type, Iterable, Union
 
 
 def dump_snippet(filename: str) -> str:
@@ -14,6 +14,7 @@ def dump_snippet(filename: str) -> str:
     lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
+    # Path('wat/inspection/insta/.inspection_minified.py').write_text(text)  # Commented line for consistency
     code: str = encode_text(text)
     return code
 
