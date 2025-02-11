@@ -3,165 +3,104 @@ from pathlib import Path
 import re
 import sys
 import zlib
+from typing import List
+
+def minify_code(code: str) -> str:
+    """Minify the code by removing type hints and unnecessary spaces."""
+    lines = code.splitlines()
+    minified_lines = []
+
+    for line in lines:
+        # Remove comments
+        line = re.sub(r'#.*', '', line)
+        # Remove type hints
+        line = re.sub(r'->\s*', '', line)
+        # Remove spaces around operators
+        line = re.sub(r'\s*([+*/-])\s*', r'\1', line)
+        # Remove spaces around commas
+        line = re.sub(r'\s*,\s*', ',', line)
+        # Remove spaces around colons
+        line = re.sub(r'\s*:\s*', ':', line)
+        # Remove spaces around equals
+        line = re.sub(r'\s*=\s*', '=', line)
+        # Remove spaces around parentheses
+        line = re.sub(r'\s*\(\s*', '(', line)
+        line = re.sub(r'\s*\)\s*', ')', line)
+        # Remove spaces around brackets
+        line = re.sub(r'\s*\{\s*', '{', line)
+        line = re.sub(r'\s*\}\s*', '}', line)
+        line = re.sub(r'\s*\[\s*', '[', line)
+        line = re.sub(r'\s*\]\s*', ']', line)
+        # Remove spaces around operators
+        line = re.sub(r'\s*([+*/-])\s*', r'\1', line)
+        # Remove spaces around colons
+        line = re.sub(r'\s*:\s*', ':', line)
+        # Remove spaces around equals
+        line = re.sub(r'\s*=\s*', '=', line)
+        # Remove spaces around commas
+        line = re.sub(r'\s*,\s*', ',', line)
+        # Remove spaces around semicolons
+        line = re.sub(r'\s*;\s*', ';', line)
+        # Remove spaces around arrows
+        line = re.sub(r'\s*->\s*', '->', line)
+        # Remove spaces around keywords
+        line = re.sub(r'\s*(if|elif|else|for|while|return|break|continue|in|is|and|or|not)\s*', r'\1', line)
+        # Remove spaces around function definitions
+        line = re.sub(r'\s*def\s+', 'def ', line)
+        # Remove spaces around class definitions
+        line = re.sub(r'\s*class\s+', 'class ', line)
+        # Remove spaces around imports
+        line = re.sub(r'\s*import\s+', 'import ', line)
+        # Remove spaces around from
+        line = re.sub(r'\s*from\s+', 'from ', line)
+        # Remove spaces around as
+        line = re.sub(r'\s*as\s+', 'as ', line)
+        # Remove spaces around with
+        line = re.sub(r'\s*with\s+', 'with ', line)
+        # Remove spaces around yield
+        line = re.sub(r'\s*yield\s+', 'yield ', line)
+        # Remove spaces around raise
+        line = re.sub(r'\s*raise\s+', 'raise ', line)
+        # Remove spaces around try
+        line = re.sub(r'\s*try\s+', 'try ', line)
+        # Remove spaces around except
+        line = re.sub(r'\s*except\s+', 'except ', line)
+        # Remove spaces around finally
+        line = re.sub(r'\s*finally\s+', 'finally ', line)
+        # Remove spaces around assert
+        line = re.sub(r'\s*assert\s+', 'assert ', line)
+        # Remove spaces around pass
+        line = re.sub(r'\s*pass\s+', 'pass ', line)
+        # Remove spaces around del
+        line = re.sub(r'\s*del\s+', 'del ', line)
+        # Remove spaces around global
+        line = re.sub(r'\s*global\s+', 'global ', line)
+        # Remove spaces around nonlocal
+        line = re.sub(r'\s*nonlocal\s+', 'nonlocal ', line)
+        # Remove spaces around lambda
+        line = re.sub(r'\s*lambda\s+', 'lambda ', line)
+        # Remove spaces around yield
+        line = re.sub(r'\s*yield\s+', 'yield ', line)
+        # Remove spaces around return
+        line = re.sub(r'\s*return\s+', 'return ', line)
+
+        if line.strip():
+            minified_lines.append(line)
+
+    return '\n'.join(minified_lines)
+
+def encode_text(text: str) -> str:
+    """Compress and encode the text using base64."""
+    compressed = zlib.compress(text.encode())
+    encoded = base64.b64encode(compressed).decode()
+    return encoded
 
 def dump_snippet(filename: str) -> str:
-    """Minify the code by removing type hints and unnecessary spaces."""
-    text: str = Path(filename).read_text()
-    lines = text.splitlines()
-    lines = [line for line in lines if line.strip()]  # Remove empty lines
-
-    # Remove comments
-    pattern = re.compile(r'#.*')
-    lines = [pattern.sub('', line) for line in lines]
-
-    # Remove type hints
-    pattern = re.compile(r'->\s*')
-    lines = [pattern.sub('', line) for line in lines]
-
-    # Remove spaces around operators
-    pattern = re.compile(r'\s*([+*/-])\s*')
-    lines = [pattern.sub(r'\1', line) for line in lines]
-
-    # Remove spaces around commas
-    pattern = re.compile(r'\s*,\s*')
-    lines = [pattern.sub(',', line) for line in lines]
-
-    # Remove spaces around colons
-    pattern = re.compile(r'\s*:\s*')
-    lines = [pattern.sub(':', line) for line in lines]
-
-    # Remove spaces around equals
-    pattern = re.compile(r'\s*=\s*')
-    lines = [pattern.sub('=', line) for line in lines]
-
-    # Remove spaces around parentheses
-    pattern = re.compile(r'\s*\(\s*')
-    lines = [pattern.sub('(', line) for line in lines]
-    pattern = re.compile(r'\s*\)\s*')
-    lines = [pattern.sub(')', line) for line in lines]
-
-    # Remove spaces around brackets
-    pattern = re.compile(r'\s*\{\s*')
-    lines = [pattern.sub('{', line) for line in lines]
-    pattern = re.compile(r'\s*\}\s*')
-    lines = [pattern.sub('}', line) for line in lines]
-    pattern = re.compile(r'\s*\[\s*')
-    lines = [pattern.sub('[', line) for line in lines]
-    pattern = re.compile(r'\s*\]\s*')
-    lines = [pattern.sub(']', line) for line in lines]
-
-    # Remove spaces around operators
-    pattern = re.compile(r'\s*([+*/-])\s*')
-    lines = [pattern.sub(r'\1', line) for line in lines]
-
-    # Remove spaces around colons
-    pattern = re.compile(r'\s*:\s*')
-    lines = [pattern.sub(':', line) for line in lines]
-
-    # Remove spaces around equals
-    pattern = re.compile(r'\s*=\s*')
-    lines = [pattern.sub('=', line) for line in lines]
-
-    # Remove spaces around commas
-    pattern = re.compile(r'\s*,\s*')
-    lines = [pattern.sub(',', line) for line in lines]
-
-    # Remove spaces around semicolons
-    pattern = re.compile(r'\s*;\s*')
-    lines = [pattern.sub(';', line) for line in lines]
-
-    # Remove spaces around arrows
-    pattern = re.compile(r'\s*->\s*')
-    lines = [pattern.sub('->', line) for line in lines]
-
-    # Remove spaces around keywords
-    pattern = re.compile(r'\s*(if|elif|else|for|while|return|break|continue|in|is|and|or|not)\s*')
-    lines = [pattern.sub(r'\1', line) for line in lines]
-
-    # Remove spaces around function definitions
-    pattern = re.compile(r'\s*def\s+')
-    lines = [pattern.sub('def ', line) for line in lines]
-
-    # Remove spaces around class definitions
-    pattern = re.compile(r'\s*class\s+')
-    lines = [pattern.sub('class ', line) for line in lines]
-
-    # Remove spaces around imports
-    pattern = re.compile(r'\s*import\s+')
-    lines = [pattern.sub('import ', line) for line in lines]
-
-    # Remove spaces around from
-    pattern = re.compile(r'\s*from\s+')
-    lines = [pattern.sub('from ', line) for line in lines]
-
-    # Remove spaces around as
-    pattern = re.compile(r'\s*as\s+')
-    lines = [pattern.sub('as ', line) for line in lines]
-
-    # Remove spaces around with
-    pattern = re.compile(r'\s*with\s+')
-    lines = [pattern.sub('with ', line) for line in lines]
-
-    # Remove spaces around yield
-    pattern = re.compile(r'\s*yield\s+')
-    lines = [pattern.sub('yield ', line) for line in lines]
-
-    # Remove spaces around raise
-    pattern = re.compile(r'\s*raise\s+')
-    lines = [pattern.sub('raise ', line) for line in lines]
-
-    # Remove spaces around try
-    pattern = re.compile(r'\s*try\s+')
-    lines = [pattern.sub('try ', line) for line in lines]
-
-    # Remove spaces around except
-    pattern = re.compile(r'\s*except\s+')
-    lines = [pattern.sub('except ', line) for line in lines]
-
-    # Remove spaces around finally
-    pattern = re.compile(r'\s*finally\s+')
-    lines = [pattern.sub('finally ', line) for line in lines]
-
-    # Remove spaces around assert
-    pattern = re.compile(r'\s*assert\s+')
-    lines = [pattern.sub('assert ', line) for line in lines]
-
-    # Remove spaces around pass
-    pattern = re.compile(r'\s*pass\s+')
-    lines = [pattern.sub('pass ', line) for line in lines]
-
-    # Remove spaces around del
-    pattern = re.compile(r'\s*del\s+')
-    lines = [pattern.sub('del ', line) for line in lines]
-
-    # Remove spaces around global
-    pattern = re.compile(r'\s*global\s+')
-    lines = [pattern.sub('global ', line) for line in lines]
-
-    # Remove spaces around nonlocal
-    pattern = re.compile(r'\s*nonlocal\s+')
-    lines = [pattern.sub('nonlocal ', line) for line in lines]
-
-    # Remove spaces around lambda
-    pattern = re.compile(r'\s*lambda\s+')
-    lines = [pattern.sub('lambda ', line) for line in lines]
-
-    # Remove spaces around yield
-    pattern = re.compile(r'\s*yield\s+')
-    lines = [pattern.sub('yield ', line) for line in lines]
-
-    # Remove spaces around return
-    pattern = re.compile(r'\s*return\s+')
-    lines = [pattern.sub('return ', line) for line in lines]
-
-    # Join the lines back into a single string
-    minified_code = '\n'.join(lines)
-
-    # Compress and encode the text
-    compressed = zlib.compress(minified_code.encode())
-    encoded = base64.b64encode(compressed).decode()
-
-    return encoded
+    """Minify the code from the given file and encode it."""
+    text = Path(filename).read_text()
+    minified_text = minify_code(text)
+    encoded_text = encode_text(minified_text)
+    return encoded_text
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
