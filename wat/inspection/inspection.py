@@ -38,7 +38,12 @@ def inspect_format(
     all: bool = False,
 ) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
-    return '\n'.join(_produce_inspect_lines(obj, config))
+    lines = list(_produce_inspect_lines(obj, config))
+    if sys.stdout.isatty() and _color_enabled():
+        terminal_width = os.get_terminal_size().columns
+        lines.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
+        lines.append(STYLE_BLUE + '─' * terminal_width + RESET)
+    return '\n'.join(lines)
 
 
 def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
@@ -82,10 +87,6 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         yield from _render_attrs_section(attributes, config)
-
-    if sys.stdout.isatty() and _color_enabled():  # horizontal bar
-        terminal_width = os.get_terminal_size().columns
-        yield STYLE_BLUE + '─' * terminal_width + RESET
 
 
 def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
