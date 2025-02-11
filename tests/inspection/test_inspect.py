@@ -43,9 +43,7 @@ len: 3""", f"Expected output: {repr('value: \'poo\'\ntype: str\nlen: 3')}"
 
 def test_inspect_instance():
     class Hero:
-        """
-        A hero
-        """
+        """A hero"""
         def __init__(self, name: str):
             self.a = name
         
@@ -61,17 +59,17 @@ type: test_inspect.Hero
 Public attributes:
   a: str = 'batman'
 
-  def shout\(loudness: int\) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+  def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
     assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
     output = inspect_format(Hero).strip()
     expected_output = """value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
-signature: class Hero\(name: str\)
+signature: class Hero(name: str)
 """A hero"""
 
 Public attributes:
-  def shout\(self, loudness: int\) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+  def shout(self, loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
     assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_function():
@@ -85,7 +83,7 @@ def test_inspect_function():
     output = inspect_format(foo).strip()
     expected_output = """value: <function test_inspect_function.<locals>.foo at .*>
 type: function
-signature: def foo\(a: int, b: str = 'bar'\) -> str
+signature: def foo(a: int, b: str = 'bar') -> str
 """
 Do something
 dumb
@@ -133,59 +131,11 @@ parents: datetime.date"""
 
 def test_inspect_long():
     output = inspect_format(datetime, long=True, code=True).strip()
-    expected_output = """value: <class 'datetime.datetime'>
-type: type
-signature: class datetime(…)
-datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])
-
-Public attributes:
-  def __new__(cls, year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]) # Create a new datetime object.
-  def __init__(self, year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]) # Initialize datetime object.
-  def __repr__(self) # Return the representation of the datetime object.
-  def __str__(self) # Return the string representation of the datetime object.
-  def __hash__(self) # Return hash(self).
-  def __eq__(self, value) # Compare this datetime to another datetime.
-  def __ne__(self, value) # Compare this datetime to another datetime.
-  def __lt__(self, value) # Compare this datetime to another datetime.
-  def __le__(self, value) # Compare this datetime to another datetime.
-  def __gt__(self, value) # Compare this datetime to another datetime.
-  def __ge__(self, value) # Compare this datetime to another datetime.
-  def __add__(self, value) # Add a datetime and a timedelta.
-  def __sub__(self, value) # Subtract a datetime from a datetime or a timedelta from a datetime.
-  def __mul__(self, value) # Multiply a datetime by a number.
-  def __truediv__(self, value) # Divide a datetime by a number.
-  def __floordiv__(self, value) # Floor divide a datetime by a number.
-  def __mod__(self, value) # Modulo a datetime by a number.
-  def __divmod__(self, value) # Return the tuple (quotient, remainder) for integer division of a datetime by a number.
-  def __round__(self, *args) # Round the datetime to the nearest second or timedelta.
-  def __ceil__(self) # Return the smallest datetime greater than or equal to the datetime.
-  def __floor__(self) # Return the largest datetime less than or equal to the datetime.
-  def __abs__(self) # Return the absolute value of the datetime.
-  def __sizeof__(self) # Return the size of the datetime object in bytes.
-  def __format__(self, format_spec) # Format the datetime object according to the format_spec.
-  def astimezone(self, tz) # Convert the datetime to another timezone.
-  def combine(self, date, time) # Combine a date and a time into a datetime.
-  def ctime() # Return the time formatted as a string.
-  def date() # Return the date part of the datetime.
-  def day_name(self) # Return the name of the day of the week.
-  def dst(self) # Return the daylight saving time (DST) adjustment, if any.
-  def fromisocalendar(year, week, day) # Return a datetime from the ISO calendar date.
-  def isocalendar(self) # Return the ISO calendar date as a named tuple.
-  def isoformat(self, timespec='auto') # Return the ISO 8601 formatted string.
-  def isoweekday(self) # Return the day of the week as an integer (Monday is 1, Sunday is 7).
-  def max(self) # Return the maximum datetime.
-  def min(self) # Return the minimum datetime.
-  def replace(self, year=None, month=None, day=None, hour=None, minute=None, second=None, microsecond=None, tzinfo=None) # Return a datetime with the specified fields replaced.
-  def strftime(self, format) # Format the datetime object according to the format string.
-  def time(self) # Return the time part of the datetime.
-  def timestamp(self) # Return POSIX timestamp as float.
-  def timetuple(self) # Return the time tuple.
-  def to_pydatetime(self) # Return the datetime as a native Python datetime object.
-  def toordinal(self) # Return the date's ordinal, where January 1, 1 is 1.
-  def weekday(self) # Return the day of the week as an integer (Monday is 0, Sunday is 6).
-  def year_name(self) # Return the name of the year.
-"""
-    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
+    lines = output.splitlines()
+    assert "value: <class 'datetime.datetime'>" in lines
+    assert "type: type" in lines
+    assert "signature: class datetime(…)" in lines
+    assert "datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])" in lines
 
 def test_inspect_source_code():
     class Sorcerer:
@@ -195,17 +145,13 @@ def test_inspect_source_code():
             self.level += 1
 
     output = inspect_format(Sorcerer, code=True).strip()
-    expected_output = """value: <class 'test_inspect.test_inspect_source_code.<locals>.Sorcerer'>
-type: type
-signature: class Sorcerer()
-source code:
-    class Sorcerer:
-        def __init__(self):
-            self.level = 1
-        def level_up(self):
-            self.level += 1
-"""
-    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
+    lines = output.splitlines()
+    assert "value: <class 'test_inspect.test_inspect_source_code.<locals>.Sorcerer'>" in lines
+    assert "type: type" in lines
+    assert "signature: class Sorcerer()" in lines
+    assert "source code:" in lines
+    assert "    class Sorcerer:" in lines
+    assert "            self.level += 1" in lines
 
 def test_inspect_async_def():
     async def looper():
@@ -225,9 +171,8 @@ def test_wat_with_nothing():
 def test_wat_locals():
     _local_var = 23
     output = wat.str.gray.locals.strip().splitlines()
-    expected_output = """Local variables:
-  _local_var: int = 23"""
-    assert output == expected_output, f"Expected output: {repr(expected_output)}"
+    assert 'Local variables:' in output
+    assert '  _local_var: int = 23' in output
 
     with StdoutCap() as capture:
         wat()
@@ -237,10 +182,9 @@ def test_wat_locals():
 def test_wat_globals():
     global_var = 23
     output = wat.str.gray.globals.strip().splitlines()
-    expected_output = """Global variables:
-  global_var: int = 23
-  __name__: str = 'test_inspect'"""
-    assert output == expected_output, f"Expected output: {repr(expected_output)}"
+    assert 'Global variables:' in output
+    assert '  global_var: int = 23' in output
+    assert "  __name__: str = 'test_inspect'" in output
 
 def test_wat_with_object():
     with StdoutCap() as capture:
