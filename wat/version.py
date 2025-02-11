@@ -10,7 +10,13 @@ setup(
         # List your dependencies here
     ],
     author="Your Name",
-    description="A brief description of your package",
+    description="A detailed description of your package",
     url="https://github.com/yourusername/yourpackagename",
+    classifiers=[
+        # Add appropriate classifiers for your package
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
     # Additional setup parameters can be added here
 )
