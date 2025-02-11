@@ -9,7 +9,7 @@ from tests.asserts import assert_multiline_match, StdoutCap
 def test_load_instaload_snippet():
     compressed_and_encoded_snippet = code
     snippet = zlib.decompress(base64.b64decode(compressed_and_encoded_snippet)).decode()
-    assert '\nwat = Wat()\n' in snippet
+    assert '\nwat=Wat()\n' in snippet
     
     exec(snippet, globals())
     with StdoutCap() as capture:
