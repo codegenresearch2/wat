@@ -2,13 +2,16 @@ from pathlib import Path
 import re
 import sys
 import zlib
+import base64
+from typing import List
 
 
 def dump_snippet(filename: str) -> str:
     text: str = Path(filename).read_text()
-    lines: list[str] = text.splitlines()
+    lines: List[str] = text.splitlines()
     lines = [line for line in lines if line.strip()]  # remove empty lines
-    lines = [re.sub(r'  # (.+)$', '', line) for line in lines]  # trim comments
+    comment_pattern = re.compile(r'  # (.+)$')
+    lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
     code: str = encode_text(text)
@@ -45,7 +48,7 @@ def minify_code(text: str) -> str:
 
 def encode_text(text: str) -> str:
     compressed = zlib.compress(text.encode())
-    b64: bytes = zlib.decompress(compressed)
+    b64: bytes = base64.b64encode(compressed)
     return b64.decode()
 
 
