@@ -59,17 +59,17 @@ type: test_inspect.Hero
 Public attributes:
   a: str = 'batman'
 
-  def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+  def shout\(loudness: int\) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
     assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
     output = inspect_format(Hero).strip()
     expected_output = """value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
-signature: class Hero(name: str)
+signature: class Hero\(name: str\)
 """A hero"""
 
 Public attributes:
-  def shout(self, loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+  def shout\(self, loudness: int\) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
     assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_function():
@@ -83,7 +83,7 @@ def test_inspect_function():
     output = inspect_format(foo).strip()
     expected_output = """value: <function test_inspect_function.<locals>.foo at .*>
 type: function
-signature: def foo(a: int, b: str = 'bar') -> str
+signature: def foo\(a: int, b: str = 'bar'\) -> str
 """
 Do something
 dumb
