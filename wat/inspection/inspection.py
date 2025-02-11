@@ -1,27 +1,29 @@
-import sys
-import os
+from dataclasses import dataclass
 import inspect
+import os
+import re
+import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
+@dataclass
 class InspectConfig:
-    def __init__(self, short: bool, dunder: bool, nodocs: bool, long: bool, code: bool, caller: bool):
-        self.short = short
-        self.dunder = dunder
-        self.nodocs = nodocs
-        self.long = long
-        self.code = code
-        self.caller = caller
+    short: bool
+    dunder: bool
+    nodocs: bool
+    long: bool
+    code: bool
+    caller: bool
 
+@dataclass
 class InspectAttribute:
-    def __init__(self, name: str, value: Any, type_: Type, callable_: bool, dunder: bool, private: bool, signature: Optional[str], doc: Optional[str]):
-        self.name = name
-        self.value = value
-        self.type = type_
-        self.callable = callable_
-        self.dunder = dunder
-        self.private = private
-        self.signature = signature
-        self.doc = doc
+    name: str
+    value: Any
+    type_: Type
+    callable_: bool
+    dunder: bool
+    private: bool
+    signature: Optional[str]
+    doc: Optional[str]
 
 RESET = '\033[0m'
 STYLE_BAR = '\033[0;34m'  # blue
@@ -172,7 +174,7 @@ def _get_doc(obj, long: bool) -> Optional[str]:
 
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type)
+    type_str = _format_type(attr.type_)
     return f'  {Style.VARIABLE}{attr.name}{Style.CODE}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute, config: InspectConfig) -> str:
@@ -273,12 +275,12 @@ def _shorten_string(text: str) -> str:
     return first_line + RESET
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
-    public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
-    private_vars = [a for a in attributes if a.private and not a.callable]
-    dunder_vars = [a for a in attributes if a.dunder and not a.callable]
-    public_methods = [a for a in attributes if not a.private and not a.dunder and a.callable]
-    private_methods = [a for a in attributes if a.private and a.callable]
-    dunder_methods = [a for a in attributes if a.dunder and a.callable]
+    public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable_]
+    private_vars = [a for a in attributes if a.private and not a.callable_]
+    dunder_vars = [a for a in attributes if a.dunder and not a.callable_]
+    public_methods = [a for a in attributes if not a.private and not a.dunder and a.callable_]
+    private_methods = [a for a in attributes if a.private and a.callable_]
+    dunder_methods = [a for a in attributes if a.dunder and a.callable_]
 
     if public_vars or public_methods:
         yield ''
@@ -415,4 +417,11 @@ Call {STYLE_CODE}wat.globals{RESET} to inspect global variables.'''
         }.get(os.environ.get('WAT_COLOR', '').lower())
         if env_color is not None:
             return env_color
-        return
+        return sys.stdout.isatty()
+
+    def _print_variables(self, variables: Dict[str, Any], title: str) -> Optional[str]:
+        lines = list(_render_variables(variables, title))
+        output = '\n'.join(line for line in lines if line is not None)
+        return self._display_output(output)
+
+    def __
