@@ -5,7 +5,7 @@ from enum import Enum
 from pydantic import BaseModel
 import wat
 from wat.inspection.inspection import inspect_format
-from tests.asserts import assert_multiline_match, StdoutCap
+from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
 def test_inspect_primitive_var():
     output = inspect_format(None).strip()
@@ -13,7 +13,7 @@ def test_inspect_primitive_var():
 type: NoneType""", f"Expected output: {repr('value: None\ntype: NoneType')}"
 
     output = inspect_format([5]).strip()
-    assert output == """value: [
+    expected_output = """value: [
     5,
 ]
 type: list
@@ -30,8 +30,8 @@ Public attributes:
   def pop(index=-1, /) # Remove and return item at index (default last).…
   def remove(value, /) # Remove first occurrence of value.…
   def reverse() # Reverse *IN PLACE*.
-  def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…""", f"Expected output: {repr('value: [5]\ntype: list\nlen: 1\nPublic attributes:\n  def append(object, /) # Append object to the end of the list.\n  def clear() # Remove all items from list.\n  def copy() # Return a shallow copy of the list.\n  def count(value, /) # Return number of occurrences of value.\n  def extend(iterable, /) # Extend list by appending elements from the iterable.\n  def index(value, start=0, stop=9223372036854775807, /) # Return first index of value.…\n  def insert(index, object, /) # Insert object before index.\n  def pop(index=-1, /) # Remove and return item at index (default last).…\n  def remove(value, /) # Remove first occurrence of value.…\n  def reverse() # Reverse *IN PLACE*.
-  def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…')}"
+  def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
     output = inspect_format([5], dunder=True).strip()
     assert re.match(r"def __eq__\(value, /\) # Return self==value.", output), f"Expected output: {repr('def __eq__(value, /) # Return self==value.')}"
@@ -55,22 +55,24 @@ def test_inspect_instance():
     
     instance = Hero('batman')
     output = inspect_format(instance).strip()
-    assert output == """value: <test_inspect.test_inspect_instance.<locals>.Hero object at .*>
+    expected_output = """value: <test_inspect.test_inspect_instance.<locals>.Hero object at .*>
 type: test_inspect.Hero
 
 Public attributes:
   a: str = 'batman'
 
-  def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+  def shout\(loudness: int\) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
     output = inspect_format(Hero).strip()
-    assert output == """value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
+    expected_output = """value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
-signature: class Hero(name: str)
+signature: class Hero\(name: str\)
 """A hero"""
 
 Public attributes:
-  def shout(self, loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+  def shout\(self, loudness: int\) -> str # Do something very very very very very very very very very very very very very very very very very stupid"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_function():
     def foo(a: int, b: str = 'bar') -> str:
@@ -81,14 +83,14 @@ def test_inspect_function():
         return a * b
   
     output = inspect_format(foo).strip()
-    assert output == """value: <function test_inspect_function.<locals>.foo at .*>
+    expected_output = """value: <function test_inspect_function.<locals>.foo at .*>
 type: function
-signature: def foo(a: int, b: str = 'bar') -> str
+signature: def foo\(a: int, b: str = 'bar'\) -> str
 """
 Do something
 dumb
 """
-"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_nested_dict():
     output = inspect_format({
@@ -102,7 +104,7 @@ def test_inspect_nested_dict():
             None: 42,
         },
     }, short=True).strip()
-    assert output == """value: {
+    expected_output = """value: {
     'a': {
         'b': {
             'values': [
@@ -119,21 +121,71 @@ def test_inspect_nested_dict():
 }
 type: dict
 len: 1"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True).strip()
-    assert output == """str: 2023-08-01 00:00:00
+    expected_output = """str: 2023-08-01 00:00:00
 repr: datetime.datetime(2023, 8, 1, 0, 0)
 type: datetime.datetime
 parents: datetime.date"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_long():
     output = inspect_format(datetime, long=True, code=True).strip()
-    lines = output.splitlines()
-    assert "value: <class 'datetime.datetime'>" in lines
-    assert "type: type" in lines
-    assert "signature: class datetime(…)" in lines
-    assert "datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])" in lines
+    expected_output = """value: <class 'datetime.datetime'>
+type: type
+signature: class datetime(…)
+datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])
+
+Public attributes:
+  def __new__(cls, year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]) # Create a new datetime object.
+  def __init__(self, year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]) # Initialize datetime object.
+  def __repr__(self) # Return the representation of the datetime object.
+  def __str__(self) # Return the string representation of the datetime object.
+  def __hash__(self) # Return hash(self).
+  def __eq__(self, value) # Compare this datetime to another datetime.
+  def __ne__(self, value) # Compare this datetime to another datetime.
+  def __lt__(self, value) # Compare this datetime to another datetime.
+  def __le__(self, value) # Compare this datetime to another datetime.
+  def __gt__(self, value) # Compare this datetime to another datetime.
+  def __ge__(self, value) # Compare this datetime to another datetime.
+  def __add__(self, value) # Add a datetime and a timedelta.
+  def __sub__(self, value) # Subtract a datetime from a datetime or a timedelta from a datetime.
+  def __mul__(self, value) # Multiply a datetime by a number.
+  def __truediv__(self, value) # Divide a datetime by a number.
+  def __floordiv__(self, value) # Floor divide a datetime by a number.
+  def __mod__(self, value) # Modulo a datetime by a number.
+  def __divmod__(self, value) # Return the tuple (quotient, remainder) for integer division of a datetime by a number.
+  def __round__(self, *args) # Round the datetime to the nearest second or timedelta.
+  def __ceil__(self) # Return the smallest datetime greater than or equal to the datetime.
+  def __floor__(self) # Return the largest datetime less than or equal to the datetime.
+  def __abs__(self) # Return the absolute value of the datetime.
+  def __sizeof__(self) # Return the size of the datetime object in bytes.
+  def __format__(self, format_spec) # Format the datetime object according to the format_spec.
+  def astimezone(self, tz) # Convert the datetime to another timezone.
+  def combine(self, date, time) # Combine a date and a time into a datetime.
+  def ctime() # Return the time formatted as a string.
+  def date() # Return the date part of the datetime.
+  def day_name(self) # Return the name of the day of the week.
+  def dst(self) # Return the daylight saving time (DST) adjustment, if any.
+  def fromisocalendar(year, week, day) # Return a datetime from the ISO calendar date.
+  def isocalendar(self) # Return the ISO calendar date as a named tuple.
+  def isoformat(self, timespec='auto') # Return the ISO 8601 formatted string.
+  def isoweekday(self) # Return the day of the week as an integer (Monday is 1, Sunday is 7).
+  def max(self) # Return the maximum datetime.
+  def min(self) # Return the minimum datetime.
+  def replace(self, year=None, month=None, day=None, hour=None, minute=None, second=None, microsecond=None, tzinfo=None) # Return a datetime with the specified fields replaced.
+  def strftime(self, format) # Format the datetime object according to the format string.
+  def time(self) # Return the time part of the datetime.
+  def timestamp(self) # Return POSIX timestamp as float.
+  def timetuple(self) # Return the time tuple.
+  def to_pydatetime(self) # Return the datetime as a native Python datetime object.
+  def toordinal(self) # Return the date's ordinal, where January 1, 1 is 1.
+  def weekday(self) # Return the day of the week as an integer (Monday is 0, Sunday is 6).
+  def year_name(self) # Return the name of the year.
+"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_source_code():
     class Sorcerer:
@@ -143,21 +195,26 @@ def test_inspect_source_code():
             self.level += 1
 
     output = inspect_format(Sorcerer, code=True).strip()
-    lines = output.splitlines()
-    assert "value: <class 'test_inspect.test_inspect_source_code.<locals>.Sorcerer'>" in lines
-    assert "type: type" in lines
-    assert "signature: class Sorcerer()" in lines
-    assert "source code:" in lines
-    assert "    class Sorcerer:" in lines
-    assert "            self.level += 1" in lines
+    expected_output = """value: <class 'test_inspect.test_inspect_source_code.<locals>.Sorcerer'>
+type: type
+signature: class Sorcerer()
+source code:
+    class Sorcerer:
+        def __init__(self):
+            self.level = 1
+        def level_up(self):
+            self.level += 1
+"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_inspect_async_def():
     async def looper():
         pass
     output = inspect_format(looper, short=True).strip()
-    assert output == """value: <function test_inspect_async_def.<locals>.looper at .*>
+    expected_output = """value: <function test_inspect_async_def.<locals>.looper at .*>
 type: function
 signature: async def looper()"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_wat_with_nothing():
     assert str(wat) == '<WAT Inspector object>'
@@ -168,8 +225,9 @@ def test_wat_with_nothing():
 def test_wat_locals():
     _local_var = 23
     output = wat.str.gray.locals.strip().splitlines()
-    assert 'Local variables:' in output
-    assert '  _local_var: int = 23' in output
+    expected_output = """Local variables:
+  _local_var: int = 23"""
+    assert output == expected_output, f"Expected output: {repr(expected_output)}"
 
     with StdoutCap() as capture:
         wat()
@@ -179,9 +237,10 @@ def test_wat_locals():
 def test_wat_globals():
     global_var = 23
     output = wat.str.gray.globals.strip().splitlines()
-    assert 'Global variables:' in output
-    assert '  global_var: int = 23' in output
-    assert "  __name__: str = 'test_inspect'" in output
+    expected_output = """Global variables:
+  global_var: int = 23
+  __name__: str = 'test_inspect'"""
+    assert output == expected_output, f"Expected output: {repr(expected_output)}"
 
 def test_wat_with_object():
     with StdoutCap() as capture:
@@ -242,13 +301,12 @@ def test_list_parent_classes():
         FIRST = 'first'
 
     output = inspect_format(Parent.FIRST, short=True).strip()
-    assert_multiline_match(output, r'''
-str: '(Parent.FIRST|first)'
+    expected_output = """str: '(Parent.FIRST|first)'
 repr: <Parent.FIRST: 'first'>
 type: test_inspect.Parent
 parents: str, enum.Enum
-len: 5
-''')
+len: 5"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
     
     class Grand(object):
         pass
@@ -260,23 +318,21 @@ len: 5
         pass
 
     output = inspect_format(Son(), short=True).strip()
-    assert_multiline_match(output, r'''
-value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
+    expected_output = """value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
 type: test_inspect.Son
-parents: test_inspect.Father, test_inspect.Grand
-''')
+parents: test_inspect.Father, test_inspect.Grand"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_pydantic_class():
     class Person(BaseModel):
         name: str
 
     output = inspect_format(Person(name='george'), short=True).strip()
-    assert_multiline_match(output, r'''
-str: name='george'
+    expected_output = """str: name='george'
 repr: Person(name='george')
 type: test_inspect.Person
-parents: pydantic.main.BaseModel
-''')
+parents: pydantic.main.BaseModel"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_returning_inspected_object():
     assert wat.short.ret / 'hello' == 'hello'
@@ -290,15 +346,14 @@ def test_listing_private_attributes():
             pass
     
     output = inspect_format(Foo('bar')).strip()
-    assert_multiline_match(output, r'''
-value: <test_inspect.test_listing_private_attributes.<locals>.Foo object at .*>
+    expected_output = """value: <test_inspect.test_listing_private_attributes.<locals>.Foo object at .*>
 type: test_inspect.Foo
 
 Private attributes:
   _name: str = 'bar'
 
-  def _private_method()
-''')
+  def _private_method()"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_backwards_wat_wat_import():
     from wat import wat
@@ -306,11 +361,10 @@ def test_backwards_wat_wat_import():
 
 def test_wat_return_output():
     result = wat.short.str / 'foo'
-    assert_multiline_match(result.strip(), r'''
-value: 'foo'
+    expected_output = """value: 'foo'
 type: str
-len: 3
-''')
+len: 3"""
+    assert strip_ansi_colors(result) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_colorful_output():
     try:
@@ -332,14 +386,22 @@ def test_inspect_overriden_len():
             return 4
 
     output = inspect_format(Foo()).strip()
-    assert_multiline_match(output, r'''
-value: <test_inspect.test_inspect_overriden_len.<locals>.Foo object at .*>
+    expected_output = """value: <test_inspect.test_inspect_overriden_len.<locals>.Foo object at .*>
 type: test_inspect.Foo
-len: 4
-''')
+len: 4"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
 
 def test_catch_len_on_str_type():
     output = (wat.str.short / str).strip().splitlines()
-    assert "value: <class 'str'>" in output
-    assert "type: type" in output
-    assert "signature: class str(…)" in output
+    expected_output = """value: <class 'str'>
+type: type
+signature: class str(…)"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
+
+def test_retrieve_caller_info_type():
+    output = wat.caller.short.str / math.sqrt(2+2)
+    expected_output = """value: 2.0
+type: float
+caller expression: output = wat.caller.short.str / math.sqrt(2+2)
+caller file: .*/tests/inspection/test_inspect.py:\d+"""
+    assert strip_ansi_colors(output) == strip_ansi_colors(expected_output), f"Expected output: {repr(expected_output)}"
