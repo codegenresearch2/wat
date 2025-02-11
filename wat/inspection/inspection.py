@@ -75,7 +75,7 @@ def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         yield f'signature: {signature}'
 
     if config.caller:
-        yield from _get_caller_info()
+        yield from _retrieve_caller_info()
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
@@ -154,10 +154,22 @@ def _get_doc(obj, long: bool) -> Optional[str]:
         return _shorten_string(doc)
 
 
+def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
+    for attr in attributes:
+        if attr.private and not attr.callable:
+            yield _render_attr_private_variable(attr)
+        elif attr.dunder and not attr.callable:
+            yield _render_attr_dunder_variable(attr)
+        elif attr.callable:
+            yield _render_attr_method(attr)
+        else:
+            yield _render_attr_variable(attr, config)
+
+
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'  {attr.name}: {type_str} = {value_str}'
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 
 def _render_attr_method(attr: InspectAttribute) -> str:
@@ -170,6 +182,18 @@ def _render_attr_method(attr: InspectAttribute) -> str:
             return f'  {attr.signature}:\n"""\n{attr.doc}\n"""'
     else:
         return f'  {attr.signature}'
+
+
+def _render_attr_private_variable(attr: InspectAttribute) -> str:
+    value_str = _format_short_value(attr.value, long=False)
+    type_str = _format_type(attr.type)
+    return f'  _{STYLE_RED}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
+
+
+def _render_attr_dunder_variable(attr: InspectAttribute) -> str:
+    value_str = _format_short_value(attr.value, long=False)
+    type_str = _format_type(attr.type)
+    return f'  __{STYLE_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 
 def _format_short_value(value, long: bool) -> str:
@@ -246,7 +270,7 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
             yield _format_type(base_type)
 
 
-def _get_caller_info() -> Iterable[str]:
+def _retrieve_caller_info() -> Iterable[str]:
     frame = inspect.currentframe()
     try:
         for _ in range(5):
