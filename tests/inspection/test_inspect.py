@@ -13,11 +13,10 @@ def main():
     test_inspect_primitive_var()
     test_inspect_instance()
     test_inspect_function()
+    test_inspect_async_def()
     test_inspect_nested_dict()
-    test_inspect_datetime_repr()
     test_inspect_long()
     test_inspect_source_code()
-    test_inspect_async_def()
     test_wat_with_nothing()
     test_wat_locals()
     test_wat_globals()
@@ -126,6 +125,16 @@ dumb
 """
 ''')
 
+def test_inspect_async_def():
+    async def looper():
+        pass
+    output = inspect_format(looper)
+    assert_multiline_match(output, r'''
+value: <function test_inspect_async_def.<locals>.looper at .*>
+type: function
+signature: async def looper()
+''')
+
 def test_inspect_nested_dict():
     output = inspect_format({
         'a': {
@@ -137,7 +146,7 @@ def test_inspect_nested_dict():
             40: None,
             None: 42,
         },
-    }, short=True)
+    })
     assert_multiline_match(output, r'''
 value: {
     'a': {
@@ -156,15 +165,19 @@ value: {
 }
 type: dict
 len: 1
-''')
 
-def test_inspect_datetime_repr():
-    output = inspect_format(datetime(2023, 8, 1), short=True)
-    assert_multiline_match(output, r'''
-str: 2023-08-01 00:00:00
-repr: datetime.datetime(2023, 8, 1, 0, 0)
-type: datetime.datetime
-parents: datetime.date
+Public attributes:
+  def clear() # Remove all items from dict.
+  def copy() # Return a shallow copy of the dict.
+  def fromkeys(iterable, value=None, /) # Create a new dictionary with keys from iterable and values set to value.
+  def get(key, default=None, /) # Return the value for key if key is in the dictionary, else default.
+  def items() # Return a view of the dictionary's items ((key, value) pairs).
+  def keys() # Return a view of the dictionary's keys.
+  def pop(key, default=None, /) # If key is in the dictionary, remove it and return its value, else return default.
+  def popitem() # Remove and return a (key, value) pair from the dictionary.
+  def setdefault(key, default=None, /) # If key is in the dictionary, return its value. If not, insert key with a value of default and return default.
+  def update(other, /) # Update the dictionary with the key/value pairs from other, overwriting existing keys.
+  def values() # Return a view of the dictionary's values.
 ''')
 
 def test_inspect_long():
@@ -190,16 +203,6 @@ def test_inspect_source_code():
     assert "source code:" in lines
     assert "    class Sorcerer:" in lines
     assert "            self.level += 1" in lines
-
-def test_inspect_async_def():
-    async def looper():
-        pass
-    output = inspect_format(looper, short=True)
-    assert_multiline_match(output, r'''
-value: <function test_inspect_async_def.<locals>.looper at .*>
-type: function
-signature: async def looper()
-''')
 
 def test_wat_with_nothing():
     assert str(wat) == '<WAT Inspector object>'
@@ -291,9 +294,9 @@ def test_list_parent_classes():
     class Parent(str, Enum):
         FIRST = 'first'
 
-    output = inspect_format(Parent.FIRST, short=True)
+    output = inspect_format(Parent.FIRST)
     assert_multiline_match(output, r'''
-str: '(Parent\.FIRST|first)'
+value: '(Parent\.FIRST|first)'
 repr: <Parent\.FIRST: 'first'>
 type: test_inspect.Parent
 parents: str, enum.Enum
@@ -310,7 +313,7 @@ def test_list_deep_mro_classes():
     class Son(Father):
         pass
 
-    output = inspect_format(Son(), short=True)
+    output = inspect_format(Son())
     assert_multiline_match(output, r'''
 value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
 type: test_inspect.Son
@@ -321,10 +324,9 @@ def test_pydantic_class():
     class Person(BaseModel):
         name: str
 
-    output = inspect_format(Person(name='george'), short=True)
+    output = inspect_format(Person(name='george'))
     assert_multiline_match(output, r'''
-str: name='george'
-repr: Person(name='george')
+value: Person(name='george')
 type: test_inspect.Person
 parents: pydantic.main.BaseModel
 ''')
