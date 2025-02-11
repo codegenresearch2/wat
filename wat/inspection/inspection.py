@@ -6,40 +6,8 @@ import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
 
-@dataclass
-class InspectConfig:
-    short: bool
-    dunder: bool
-    nodocs: bool
-    long: bool
-    code: bool
-    caller: bool
-
-
-@dataclass
-class InspectAttribute:
-    name: str
-    value: Any
-    type: Type
-    callable: bool
-    dunder: bool
-    private: bool
-    signature: Optional[str]
-    doc: Optional[str]
-
-
-def inspect_format(
-    obj: Any,
-    *,
-    short: bool = False,
-    dunder: bool = False,
-    nodocs: bool = False,
-    long: bool = False,
-    code: bool = False,
-    caller: bool = False,
-    all: bool = False,
-) -> str:
-    config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller or all)
+def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, all: bool = False) -> str:
+    config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
     output: List[str] = list(_produce_inspect_lines(obj, config))
 
     if sys.stdout.isatty() and _color_enabled():  # horizontal bar
@@ -76,11 +44,8 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
-        signature = _get_callable_signature(name, obj)
+        signature = _get_callable_signature(name, obj) if callable(obj) else None
         yield f'{STYLE_BRIGHT_BLUE}signature:{RESET} {signature}'
-    
-    if config.caller:
-        yield from _get_caller_info()
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
@@ -251,23 +216,6 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
             yield _format_type(base_type)
 
 
-def _get_caller_info() -> Iterable[str]:
-    frame = inspect.currentframe()
-    try:
-        for _ in range(5):  # back to caller frame
-            if frame is not None:
-                frame = frame.f_back
-        if frame:
-            frameinfo = inspect.getframeinfo(frame)
-            if frameinfo.code_context:
-                code = '\n'.join(frameinfo.code_context).strip()
-                yield f'{STYLE_BRIGHT_BLUE}caller expression:{RESET} {code}'
-                yield f'{STYLE_BRIGHT_BLUE}caller file:{RESET} {frameinfo.filename}:{frameinfo.lineno}'
-        return None
-    finally:
-        del frame
-
-
 def _shorten_string(text: str) -> str:
     first_line, _, rest = text.partition('\n')
     if rest:
@@ -383,7 +331,6 @@ class Wat:
   {STYLE_GREEN}.code{RESET} to print source code of a function, method or class
   {STYLE_GREEN}.long{RESET} to print non-abbreviated values and documentation
   {STYLE_GREEN}.nodocs{RESET} to hide documentation for functions and classes
-  {STYLE_GREEN}.caller{RESET} to show how and where the inspection was called
   {STYLE_GREEN}.all{RESET} to include all information
   {STYLE_GREEN}.ret{RESET} to return the inspected {STYLE_YELLOW}object{RESET}
   {STYLE_GREEN}.str{RESET} to return the output string instead of printing
@@ -455,8 +402,6 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
             new_wat._inspect_kwargs['code'] = True
         elif name == 'nodocs':
             new_wat._inspect_kwargs['nodocs'] = True
-        elif name == 'caller':
-            new_wat._inspect_kwargs['caller'] = True
         elif name == 'all':
             new_wat._inspect_kwargs['all'] = True
         elif name == 'ret':
@@ -485,9 +430,4 @@ STYLE_BRIGHT_GREEN = '\033[1;32m'
 STYLE_YELLOW = '\033[0;33m'
 STYLE_BRIGHT_YELLOW = '\033[1;33m'
 STYLE_BLUE = '\033[0;34m'
-STYLE_BRIGHT_BLUE = '\033[1;34m'
-STYLE_MAGENTA = '\033[0;35m'
-STYLE_CYAN = '\033[0;36m'
-STYLE_GRAY = '\033[2;37m'
-
-wat = Wat()
+STYLE_BRIGHT_
