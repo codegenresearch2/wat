@@ -188,7 +188,7 @@ def _get_doc(obj: Any, long: bool) -> Optional[str]:
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'  {attr.name}: {type_str} = {value_str}'
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 
 def _render_attr_method(attr: InspectAttribute) -> str:
@@ -300,7 +300,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if public_vars or public_methods:
         yield ""
-        yield "Public attributes:"
+        yield f"{STYLE_BRIGHT}Public attributes:{RESET}"
         for attr in public_vars:
             yield _render_attr_variable(attr, config)
         if public_vars and public_methods:
@@ -310,7 +310,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
     
     if private_vars or private_methods:
         yield ""
-        yield "Private attributes:"
+        yield f"{STYLE_BRIGHT}Private attributes:{RESET}"
         for attr in private_vars:
             yield _render_attr_variable(attr, config)
         if private_vars and private_methods:
@@ -320,7 +320,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if config.dunder and dunder_attrs:
         yield ""
-        yield "Dunder attributes:"
+        yield f"{STYLE_BRIGHT}Dunder attributes:{RESET}"
         for attr in dunder_vars:
             yield _render_attr_variable(attr, config)
         if dunder_vars and dunder_methods:
@@ -437,7 +437,18 @@ def _build_globals_object():
 
 
 RESET ='\033[0m'
+STYLE_BRIGHT = '\033[1m'
+STYLE_DIM = '\033[2m'
+
+STYLE_RED = '\033[0;31m'
+STYLE_BRIGHT_RED = '\033[1;31m'
+STYLE_GREEN = '\033[0;32m'
+STYLE_BRIGHT_GREEN = '\033[1;32m'
 STYLE_YELLOW = '\033[0;33m'
 STYLE_BRIGHT_YELLOW = '\033[1;33m'
 STYLE_BLUE = '\033[0;34m'
 STYLE_BRIGHT_BLUE = '\033[1;34m'
+STYLE_MAGENTA = '\033[0;35m'
+STYLE_CYAN = '\033[0;36m'
+STYLE_WHITE = '\033[0;37m'
+STYLE_GRAY = '\033[2;37m'
