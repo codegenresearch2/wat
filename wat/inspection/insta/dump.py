@@ -14,7 +14,7 @@ def dump_snippet(filename: str) -> str:
     lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
-    # Path('wat/inspection/inspection_pruned.py').write_text(text)  # commented line to match gold code structure
+    Path('wat/inspection/inspection_pruned.py').write_text(text)  # commented line to match gold code structure
     code: str = encode_text(text)
     return code
 
@@ -40,6 +40,12 @@ def minify_code(text: str) -> str:
         text = re.sub(r': Dict(\[.+\])?', '', text)
         text = re.sub(r': List(\[.+\])?', '', text)
         text = text.replace(': Type)', ')')
+        # Additional whitespace handling from gold code
+        text = re.sub(r'= \'', '=\'', text)
+        text = re.sub(r', \'', ',\'', text)
+        text = re.sub(r'\' ,', '\'', text)
+        text = re.sub(r' = ', '=', text)
+        text = re.sub(r', ', ',', text)
     if not text.endswith(': str'):
         text = text.replace(': str', '')
     if text.count(' = ') == 1:
