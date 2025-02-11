@@ -14,7 +14,6 @@ def dump_snippet(filename: str) -> str:
     lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
-    # Path('wat/inspection/insta/.inspection_minified.py').write_text(text)
     code: str = encode_text(text)
     return code
 
@@ -40,13 +39,6 @@ def minify_code(text: str) -> str:
         text = re.sub(r': Dict(\[.+\])?', '', text)
         text = re.sub(r': List(\[.+\])?', '', text)
         text = text.replace(': Type)', ')')
-        # text = text.replace(' = ', '=')
-        # text = text.replace(', ', ',')
-        # text = text.replace(': ', ':')
-    # text = text.replace(' == ', '==')
-    # text = text.replace(' + ', '+')
-    # text = text.replace(' * ', '*')
-    # text = text.replace(' = \'', '=\'')
     if not text.endswith(': str'):
         text = text.replace(': str', '')
     if text.count(' = ') == 1:
