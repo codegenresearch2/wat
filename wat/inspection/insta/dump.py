@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import sys
 import zlib
-from typing import List
+from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
 
 def dump_snippet(filename: str) -> str:
@@ -44,11 +44,11 @@ def minify_code(text: str) -> str:
         text = text.replace(' + ', '+')
         text = text.replace(' * ', '*')
         text = text.replace(' = \'', '=\'')
+        text = text.replace(' = ', '=')
+        text = text.replace(', ', ',')
+        text = text.replace(': ', ':')
     if not text.endswith(': str'):
         text = text.replace(': str', '')
-    if text.count(' = ') == 1:
-        if not _is_in_quote(text, ' = '):
-            text = text.replace(' = ', '=')
     return text
 
 
