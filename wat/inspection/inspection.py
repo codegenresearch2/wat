@@ -1,28 +1,30 @@
-import sys
-import re
+from dataclasses import dataclass
+import inspect as std_inspect
 import os
+import re
+import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
 
+@dataclass
 class InspectConfig:
-    def __init__(self, short: bool, dunder: bool, nodocs: bool, long: bool, code: bool):
-        self.short = short
-        self.dunder = dunder
-        self.nodocs = nodocs
-        self.long = long
-        self.code = code
+    short: bool
+    dunder: bool
+    nodocs: bool
+    long: bool
+    code: bool
 
 
+@dataclass
 class InspectAttribute:
-    def __init__(self, name: str, value: Any, type_: Type, callable_: bool, dunder: bool, private: bool, signature: Optional[str], doc: Optional[str]):
-        self.name = name
-        self.value = value
-        self.type = type_
-        self.callable = callable_
-        self.dunder = dunder
-        self.private = private
-        self.signature = signature
-        self.doc = doc
+    name: str
+    value: Any
+    type_: Type
+    callable: bool
+    dunder: bool
+    private: bool
+    signature: Optional[str]
+    doc: Optional[str]
 
 
 RESET = '\033[0m'
