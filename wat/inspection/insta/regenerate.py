@@ -17,12 +17,13 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         replaced_contents.append(replaced_content)
 
     if old_code == new_code:
-        print('Insta-Load code is up to date')
-    else:
-        print(f'Character count change: Old ({len(old_code)}) -> New ({len(new_code)})')
+        print('Insta-Load code is already up to date')
+        return
 
-    for i, dst_filename in enumerate(dst_filenames):
-        Path(dst_filename).write_text(replaced_contents[i])
+    print(f'Insta-Load replaced: {len(old_code)} characters -> {len(new_code)} characters')
+
+    for dst_filename in dst_filenames:
+        Path(dst_filename).write_text(replaced_contents.pop(0))
         print(f'Code replaced in {dst_filename}')
 
 if __name__ == '__main__':
