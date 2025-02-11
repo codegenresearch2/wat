@@ -78,14 +78,13 @@ def inspect_format(
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         output.extend(_render_attrs_section(attributes, config))
 
-    if sys.stdout.isatty():  # horizontal bar
+    if sys.stdout.isatty() and _color_enabled():  # horizontal bar
         terminal_width = os.get_terminal_size().columns
-        if not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
-            output.insert(0, '─' * terminal_width)
-            output.append('─' * terminal_width)
+        output.insert(0, '─' * terminal_width)
+        output.append('─' * terminal_width)
 
     text = '\n'.join(line for line in output if line is not None)
-    if (not sys.stdout.isatty()) or ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
+    if not _color_enabled():
         text = _strip_color(text)
     return text
 
@@ -401,6 +400,10 @@ wat = Wat()
 
 def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
+
+
+def _color_enabled() -> bool:
+    return "WAT_COLOR" in os.environ and os.environ["WAT_COLOR"] == 'true'
 
 
 def _build_locals_object():
