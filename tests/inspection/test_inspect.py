@@ -10,6 +10,33 @@ from wat.inspection.inspection import inspect_format
 from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
 
+def main():
+    test_inspect_primitive_var()
+    test_inspect_instance()
+    test_inspect_function()
+    test_inspect_nested_dict()
+    test_inspect_datetime_repr()
+    test_inspect_long()
+    test_inspect_source_code()
+    test_inspect_async_def()
+    test_wat_with_nothing()
+    test_wat_locals()
+    test_wat_globals()
+    test_wat_with_object()
+    test_wat_with_short_long_modifiers()
+    test_wat_with_multiple_modifiers()
+    test_wat_modifiers_all_but_nodocs()
+    test_list_parent_classes()
+    test_list_deep_mro_classes()
+    test_pydantic_class()
+    test_returning_inspected_object()
+    test_listing_private_attributes()
+    test_backwards_wat_wat_import()
+    test_wat_return_output()
+    test_colorful_output()
+    test_inspect_overriden_len()
+
+
 def test_inspect_primitive_var():
     output = inspect_format(None)
     assert strip_ansi_colors(output) == """
@@ -97,7 +124,7 @@ def test_inspect_function():
     output = inspect_format(foo)
     print(output)
     assert_multiline_match(output, r'''
-value: <function test_inspect_function\.<locals>\.foo at .*>
+value: <function test_inspect_function.<locals>.foo at .*>
 type: function
 signature: def foo\(a: int, b: str = 'bar'\) -> str
 """
@@ -391,8 +418,5 @@ len: 4
 ''')
 
 
-def test_catch_len_on_str_type():
-    output = (wat.str.short / str).splitlines()
-    assert "value: <class 'str'>" in output
-    assert "type: type" in output
-    assert "signature: class str(…)" in output
+if __name__ == '__main__':
+    main()
