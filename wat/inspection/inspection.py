@@ -83,6 +83,10 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         yield from _render_attrs_section(attributes, config)
 
+    if sys.stdout.isatty() and _color_enabled():  # horizontal bar
+        terminal_width = os.get_terminal_size().columns
+        yield STYLE_BLUE + '─' * terminal_width + RESET
+
 
 def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
     for key in dir(obj):
@@ -147,19 +151,19 @@ def _get_doc(obj, long: bool) -> Optional[str]:
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'{STYLE_BRIGHT_YELLOW}{attr.name}:{RESET} {type_str} = {value_str}'
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}:{RESET} {type_str} = {value_str}'
 
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
-        return f'{STYLE_BRIGHT_YELLOW}{attr.name}(…){RESET}'
+        return f'  {STYLE_BRIGHT_YELLOW}{attr.name}(…){RESET}'
     if attr.doc:
         if attr.doc.count('\n') == 0:
-            return f'{STYLE_BRIGHT_YELLOW}{attr.signature}  #{RESET} {attr.doc}'
+            return f'  {STYLE_BRIGHT_YELLOW}{attr.signature}  #{RESET} {attr.doc}'
         else:
-            return f'{STYLE_BRIGHT_YELLOW}{attr.signature}:{RESET}\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
+            return f'  {STYLE_BRIGHT_YELLOW}{attr.signature}:{RESET}\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
     else:
-        return f'{STYLE_BRIGHT_YELLOW}{attr.signature}{RESET}'
+        return f'  {STYLE_BRIGHT_YELLOW}{attr.signature}{RESET}'
 
 
 def _format_short_value(value, long: bool) -> str:
