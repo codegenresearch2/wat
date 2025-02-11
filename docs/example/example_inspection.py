@@ -3,5 +3,5 @@ import wat
 import math
 
 if __name__ == '__main__':
-    a = globals()
-    wat.globals(caller=True)
+    result = math.sqrt(2 + 2)
+    print(result)
