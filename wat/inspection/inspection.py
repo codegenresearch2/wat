@@ -1,31 +1,8 @@
-from dataclasses import dataclass
-import inspect as std_inspect
 import os
+import inspect as std_inspect
 import re
 import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
-
-
-@dataclass
-class InspectConfig:
-    short: bool
-    dunder: bool
-    nodocs: bool
-    long: bool
-    code: bool
-
-
-@dataclass
-class InspectAttribute:
-    name: str
-    value: Any
-    type: Type
-    callable: bool
-    dunder: bool
-    private: bool
-    signature: Optional[str]
-    doc: Optional[str]
-
 
 RESET = '\033[0m'
 STYLE_BRIGHT = '\033[1m'
@@ -43,6 +20,24 @@ STYLE_CYAN = '\033[0;36m'
 STYLE_WHITE = '\033[0;37m'
 STYLE_GRAY = '\033[2;37m'
 
+@dataclass
+class InspectConfig:
+    short: bool
+    dunder: bool
+    nodocs: bool
+    long: bool
+    code: bool
+
+@dataclass
+class InspectAttribute:
+    name: str
+    value: Any
+    type_: Type
+    callable: bool
+    dunder: bool
+    private: bool
+    signature: Optional[str]
+    doc: Optional[str]
 
 def inspect_format(
     obj: Any,
@@ -95,7 +90,7 @@ def inspect_format(
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         output.extend(_render_attrs_section(attributes, config))
 
-    if sys.stdout.isatty() and not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
+    if sys.stdout.isatty() and _color_enabled():
         terminal_width = os.get_terminal_size().columns
         output.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
         output.append(STYLE_BLUE + '─' * terminal_width + RESET)
@@ -105,6 +100,8 @@ def inspect_format(
         text = _strip_color(text)
     return text
 
+def _color_enabled() -> bool:
+    return os.getenv('WAT_COLOR', 'true').lower() == 'true'
 
 def _iter_attributes(obj: Any, config: InspectConfig) -> Iterable[InspectAttribute]:
     keys = dir(obj)
@@ -120,7 +117,7 @@ def _iter_attributes(obj: Any, config: InspectConfig) -> Iterable[InspectAttribu
         yield InspectAttribute(
             name=key,
             value=value,
-            type=type(value),  # Changed from type_ to type to match the gold code
+            type=type(value),
             callable=callable_,
             dunder=dunder,
             private=private,
@@ -128,13 +125,11 @@ def _iter_attributes(obj: Any, config: InspectConfig) -> Iterable[InspectAttribu
             doc=doc,
         )
 
-
 def _get_attribute_value(obj: Any, key: str) -> Any:
     try:
         return getattr(obj, key)
     except BaseException as e:
         return e
-
 
 def _get_callable_signature(name: str, obj: Any) -> Optional[str]:
     try:
@@ -158,13 +153,11 @@ def _get_callable_signature(name: str, obj: Any) -> Optional[str]:
         prefix = ""
     return f'{prefix}{name}{_signature}'
 
-
 def _get_source_code(obj: Any) -> Optional[str]:
     try:
         return std_inspect.getsource(obj)
     except (OSError, TypeError, IndentationError) as e:
         return f'failed to get source code: {type(e)}: {e}'
-
 
 def _get_doc(obj: Any, long: bool) -> Optional[str]:
     doc = std_inspect.getdoc(obj)
@@ -176,31 +169,27 @@ def _get_doc(obj: Any, long: bool) -> Optional[str]:
     else:
         return _shorten_string(doc)
 
-
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type)  # Changed from type_ to type to match the gold code
+    type_str = _format_type(attr.type)
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
-
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
         return f'  {attr.name}(…)'
     if attr.doc:
         if attr.doc.count('\n') == 0:
-            return f'  {attr.signature} # {attr.doc}'  # Removed extra space before the comment
+            return f'  {attr.signature} # {attr.doc}'
         else:
             return f'  {attr.signature}:\n"""\n{attr.doc}\n"""\n'
     else:
         return f'  {attr.signature}'
-
 
 def _format_short_value(value: Any, long: bool) -> str:
     value_str = _format_value(value)
     if long:
         return value_str
     return _shorten_string(value_str)
-
 
 def _format_value(value: Any, indent: int = 0) -> str:
     if isinstance(value, str):
@@ -219,7 +208,6 @@ def _format_value(value: Any, indent: int = 0) -> str:
         return _format_list_value(value, indent=indent+1)
     return str(value)
 
-
 def _format_dict_value(dic: Dict, indent: int) -> str:
     lines: List[str] = []
     indentation = '    ' * indent
@@ -234,7 +222,6 @@ def _format_dict_value(dic: Dict, indent: int) -> str:
     else:
         return '{}'
 
-
 def _format_list_value(lst: List, indent: int) -> str:
     lines: List[str] = []
     for value in lst:
@@ -247,13 +234,11 @@ def _format_list_value(lst: List, indent: int) -> str:
     else:
         return '[]'
 
-
 def _format_type(type_: Type) -> str:
     module = type_.__module__
-    if module is None or module == str.__class__.__module__:  # built-in type
+    if module is None or module == str.__class__.__module__:
         return type_.__name__
     return f'{module}.{type_.__name__}'
-
 
 def _get_parent_types(type_: Type) -> Iterable[str]:
     if hasattr(type_, '__mro__'):
@@ -264,10 +249,8 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
                 continue
             yield _format_type(base_type)
 
-
 def _format_parent_types(obj: Any) -> str:
     return ', '.join(_get_parent_types(type(obj)))
-
 
 def _shorten_string(text: str) -> str:
     first_line, _, rest = text.partition('\n')
@@ -276,7 +259,6 @@ def _shorten_string(text: str) -> str:
     if len(first_line) > 100:
         first_line = first_line[:100] + '…'
     return first_line + RESET
-
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
     public_attrs = [attr for attr in attributes if not attr.private and not attr.dunder]
@@ -319,7 +301,6 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
             yield ""
         for attr in dunder_methods:
             yield _render_attr_method(attr)
-
 
 class Wat:
     """Inspector instance to examine unknown objects with short operators"""
@@ -414,10 +395,8 @@ Call wat.globals to inspect globals variables.
 
 wat = Wat()
 
-
 def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
-
 
 def _build_locals_object():
     o = type('locals', (object,), {})()
@@ -432,7 +411,6 @@ def _build_locals_object():
     finally:
         del frame
     return o
-
 
 def _build_globals_object():
     o = type('globals', (object,), {})()
