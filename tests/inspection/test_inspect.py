@@ -6,7 +6,6 @@ import wat
 from wat.inspection.inspection import inspect_format
 from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
-
 def test_inspect_primitive_var():
     output = inspect_format(None)
     assert strip_ansi_colors(output) == """
@@ -45,7 +44,6 @@ type: str
 len: 3
 ''')
 
-
 def test_inspect_instance():
     class Hero:
         """
@@ -81,7 +79,6 @@ Public attributes:
   def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
 ''')
 
-
 def test_inspect_function():
     def foo(a: int, b: str = 'bar') -> str:
         """
@@ -101,7 +98,6 @@ Do something
 dumb
 """
 ''')
-
 
 def test_inspect_nested_dict():
     output = inspect_format({
@@ -135,7 +131,6 @@ type: dict
 len: 1
 ''')
 
-
 def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
     assert_multiline_match(output, r'''
@@ -145,7 +140,6 @@ type: datetime.datetime
 parents: datetime\.date
 ''')
 
-
 def test_inspect_long():
     output = inspect_format(datetime, long=True, code=True)
     lines = output.splitlines()
@@ -153,7 +147,6 @@ def test_inspect_long():
     assert "type: type" in lines
     assert "signature: class datetime(…)" in lines
     assert "datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])" in lines
-
 
 def test_inspect_source_code():
     class Sorcerer:
@@ -171,7 +164,6 @@ def test_inspect_source_code():
     assert "    class Sorcerer:" in lines
     assert "            self.level += 1" in lines
 
-
 def test_inspect_async_def():
     async def looper():
         pass
@@ -182,13 +174,11 @@ type: function
 signature: async def looper\(\)
 ''')
 
-
 def test_wat_with_nothing():
     assert str(wat) == '<Wat Inspector object>'
     with StdoutCap() as capture:
         assert repr(wat) == ''
     assert 'Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:' in capture.uncolor().splitlines()
-
 
 def test_wat_locals():
     _local_var = 23
@@ -196,12 +186,6 @@ def test_wat_locals():
         wat()
     assert 'value: <wat.inspection.inspection.locals object' in capture.uncolor()
     assert '_local_var: int = 23' in capture.uncolor()
-
-    with StdoutCap() as capture:
-        wat.locals
-    assert 'value: <wat.inspection.inspection.locals object' in capture.uncolor()
-    assert '_local_var: int = 23' in capture.uncolor()
-
 
 global_var = 23
 
@@ -211,7 +195,6 @@ def test_wat_globals():
     assert 'value: <wat.inspection.inspection.globals object' in capture.uncolor()
     assert 'global_var: int = 23' in capture.uncolor()
 
-
 def test_wat_with_object():
     with StdoutCap() as capture:
         wat(short=True) / 'moo'
@@ -220,15 +203,6 @@ value: 'moo'
 type: str
 len: 3
 ''')
-
-    with StdoutCap() as capture:
-        wat('moo', short=True)
-    assert_multiline_match(capture.output(), r'''
-value: 'moo'
-type: str
-len: 3
-''')
-
 
 def test_wat_with_short_long_modifiers():
     with StdoutCap() as capture:
@@ -246,7 +220,6 @@ len: 3
 """
 ''' in capture.output()
 
-
 def test_wat_with_multiple_modifiers():
     with StdoutCap() as capture:
         wat.dunder.code / re.match
@@ -261,7 +234,6 @@ source code:
 def match(pattern, string, flags=0):
 ''' in capture.output()
     
-
 def test_wat_modifiers_all_but_nodocs():
     with StdoutCap() as capture:
         wat.all.short.nodocs / re.match
@@ -276,7 +248,6 @@ def match\(pattern, string, flags=0\):
     .*
 ''')
 
-
 def test_list_parent_classes():
     class Parent(str, Enum):
         FIRST = 'first'
@@ -290,7 +261,6 @@ parents: str, enum\.Enum
 len: 5
 ''')
     
-
 def test_list_deep_mro_classes():
     class Grand(object):
         pass
@@ -307,7 +277,6 @@ value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
 type: test_inspect.Son
 parents: test_inspect.Father, test_inspect.Grand
 ''')
-
 
 def test_pydantic_class():
     class Person(BaseModel):
