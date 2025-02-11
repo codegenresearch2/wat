@@ -1,4 +1,4 @@
-import sys
+import inspect
 import os
 import re
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
@@ -65,7 +65,7 @@ def inspect_format(
         else:
             output.extend([f'"""', doc, f'"""'])
 
-    if config.code and (issubclass(obj, type) or callable(obj)):
+    if config.code and (inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
             output.append(f'source code:\n{source}')
@@ -74,7 +74,7 @@ def inspect_format(
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         output.extend(_render_attrs_section(attributes, config))
 
-    if sys.stdout.isatty():  # horizontal bar
+    if _color_enabled():  # horizontal bar
         terminal_width = os.get_terminal_size().columns
         if not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
             output.insert(0, '─' * terminal_width)
@@ -154,7 +154,7 @@ def _get_doc(obj: Any, long: bool) -> Optional[str]:
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'  {attr.name}: {type_str} = {value_str}'
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
@@ -379,6 +379,9 @@ wat = Wat()
 
 def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
+
+def _color_enabled() -> bool:
+    return not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true')
 
 def _build_locals_object():
     o = type('locals', (object,), {})()
