@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import sys
 import zlib
-from typing import Any, Dict, List, Optional, Type, Iterable, Union
+from typing import List
 
 
 def dump_snippet(filename: str) -> str:
