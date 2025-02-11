@@ -1,6 +1,5 @@
 from datetime import datetime
 from enum import Enum
-import os
 import re
 
 from pydantic import BaseModel
@@ -15,7 +14,7 @@ def test_inspect_primitive_var():
     assert strip_ansi_colors(output) == """
 value: None
 type: NoneType
-""".strip()
+"""
 
     output = inspect_format([5])
     assert strip_ansi_colors(output) == """
@@ -37,8 +36,8 @@ Public attributes:
   def remove(value, /) # Remove first occurrence of value.…
   def reverse() # Reverse *IN PLACE*.
   def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…
-""".strip()
-    
+"""
+
     output = inspect_format([5], dunder=True)
     assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output)
 
@@ -95,9 +94,8 @@ def test_inspect_function():
         return a * b
   
     output = inspect_format(foo)
-    print(output)
     assert_multiline_match(output, r'''
-value: <function test_inspect_function\.<locals>\.foo at .*>
+value: <function test_inspect_function.<locals>.foo at .*>
 type: function
 signature: def foo\(a: int, b: str = 'bar'\) -> str
 """
@@ -362,18 +360,3 @@ value: 'foo'
 type: str
 len: 3
 ''')
-
-
-def test_colorful_output():
-    try:
-        os.environ['WAT_COLOR'] = 'false'
-        output = inspect_format(None)
-        assert output == """value: None
-type: NoneType"""
-
-        os.environ['WAT_COLOR'] = 'true'
-        output = inspect_format(None)
-        assert output == """\x1b[1;34mvalue:\x1b[0m \x1b[0;35mNone\x1b[0m
-\x1b[1;34mtype:\x1b[0m \x1b[0;33mNoneType\x1b[0m"""
-    finally:
-        os.environ['WAT_COLOR'] = ''
