@@ -1,3 +1,5 @@
+__all__ = ['wat', '__version__']
+
 import sys
 
 from .inspection.inspection import wat
