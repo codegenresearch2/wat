@@ -80,7 +80,7 @@ def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         yield f'signature: {signature}'
     
     if config.caller:
-        yield from _retrieve_caller_info()
+        yield from _generate_caller_info()
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
@@ -242,7 +242,7 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
             yield _format_type(base_type)
 
 
-def _retrieve_caller_info() -> Iterable[str]:
+def _generate_caller_info() -> Iterable[str]:
     frame = _caller_stack_frame(6)
     if frame:
         frameinfo = inspect.getframeinfo(frame)
