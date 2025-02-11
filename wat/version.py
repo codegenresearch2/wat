@@ -1,1 +1,1 @@
-# This comment should match the gold code exactly.
+__version__ = "0.4.0"  # Ensure this matches the version in pyproject.toml
