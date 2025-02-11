@@ -1,55 +1,31 @@
-from dataclasses import dataclass
-import inspect
-import os
-import re
-import sys
-from typing import Any, Dict, List, Optional, Type, Iterable, Union
-from datetime import datetime
+class Style:
+    RESET = '\033[0m'
+    STYLE_BAR = '\033[0;34m'  # blue
+    STYLE_TRAIT = '\033[1;34m'  # bright blue
+    STYLE_HEADER = '\033[1;37m'  # bright white
+    STYLE_REPR = '\033[1;37m'  # bright white
+    STYLE_STRING = '\033[0;32m'  # green
+    STYLE_NUMBER = '\033[0;31m'  # red
+    STYLE_NONE = '\033[0;35m'  # magenta
+    STYLE_TRUE = '\033[1;32m'  # bright green
+    STYLE_FALSE = '\033[1;31m'  # bright red
+    STYLE_DOCS = '\033[2;37m'  # gray
+    STYLE_KEYWORD = '\033[0;34m'  # blue
+    STYLE_CALLABLE = '\033[1;32m'  # bright green
+    STYLE_SIGNATURE = '\033[0;32m'  # green
+    STYLE_VARIABLE = '\033[1;33m'  # bright yellow
+    STYLE_CODE = '\033[0;33m'  # yellow
 
-
-@dataclass
-class InspectConfig:
-    short: bool
-    dunder: bool
-    nodocs: bool
-    long: bool
-    code: bool
-    caller: bool
-
-
-@dataclass
-class InspectAttribute:
-    name: str
-    value: Any
-    type: Type
-    callable: bool
-    dunder: bool
-    private: bool
-    signature: Optional[str]
-    doc: Optional[str]
-
-
-def inspect_format(
-    obj: Any,
-    *,
-    short: bool = False,
-    dunder: bool = False,
-    nodocs: bool = False,
-    long: bool = False,
-    code: bool = False,
-    caller: bool = False,
-    all: bool = False,
-) -> str:
+def inspect_format(obj: Any, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, caller: bool = False, all: bool = False) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller or all)
     output: List[str] = list(_yield_inspect_lines(obj, config))
 
     if sys.stdout.isatty():  # horizontal bar
         terminal_width = os.get_terminal_size().columns
-        output.insert(0, STYLE_BAR + '─' * terminal_width + RESET)
-        output.append(STYLE_BAR + '─' * terminal_width + RESET)
+        output.insert(0, Style.STYLE_BAR + '─' * terminal_width + Style.RESET)
+        output.append(Style.STYLE_BAR + '─' * terminal_width + Style.RESET)
 
     return '\n'.join(line for line in output if line is not None)
-
 
 def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     if config.caller:
@@ -58,44 +34,43 @@ def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
     repr_value: str = repr(obj)
     if repr_value == str(obj) or repr_value == _strip_color(str_value):
-        yield f'{STYLE_TRAIT}value:{RESET} {str_value}'
+        yield f'{Style.STYLE_TRAIT}value:{Style.RESET} {str_value}'
     else:
-        yield f'{STYLE_TRAIT}str:{RESET} {str_value}'
-        yield f'{STYLE_TRAIT}repr:{RESET} {STYLE_REPR}{repr_value}{RESET}'
+        yield f'{Style.STYLE_TRAIT}str:{Style.RESET} {str_value}'
+        yield f'{Style.STYLE_TRAIT}repr:{Style.RESET} {Style.STYLE_REPR}{repr_value}{Style.RESET}'
 
     str_type = _format_type(type(obj))
-    yield f'{STYLE_TRAIT}type:{RESET} {str_type}'
+    yield f'{Style.STYLE_TRAIT}type:{Style.RESET} {str_type}'
     parents = ', '.join(_get_parent_types(type(obj)))
     if parents:
-        yield f'{STYLE_TRAIT}parents:{RESET} {parents}'
+        yield f'{Style.STYLE_TRAIT}parents:{Style.RESET} {parents}'
 
     if callable(getattr(obj, '__len__', None)):
         try:
-            yield f'{STYLE_TRAIT}len:{RESET} {_format_value(len(obj))}'
+            yield f'{Style.STYLE_TRAIT}len:{Style.RESET} {_format_value(len(obj))}'
         except TypeError:
             pass
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj) if _callable else None
-        yield f'{STYLE_TRAIT}signature:{RESET} {signature}'
+        yield f'{Style.STYLE_TRAIT}signature:{Style.RESET} {signature}'
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
         if doc.count('\n') == 0:
-            yield f'{STYLE_DOCS}"""{doc}"""{RESET}'
+            yield f'{Style.STYLE_DOCS}"""{doc}"""{Style.RESET}'
         else:
-            yield from [f'{STYLE_DOCS}"""', doc, f'"""{RESET}']
+            yield from [f'{Style.STYLE_DOCS}"""', doc, f'"""{Style.RESET}']
 
     if config.code and (inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
-            yield f'{STYLE_TRAIT}source code:{RESET}\n{source}'
+            yield f'{Style.STYLE_TRAIT}source code:{Style.RESET}\n{source}'
 
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         yield from _render_attrs_section(attributes, config)
-
 
 def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
     for key in dir(obj):
@@ -115,7 +90,6 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
             private=private, signature=signature, doc=doc,
         )
 
-
 def _get_callable_signature(name: str, obj) -> Optional[str]:
     try:
         _signature = str(inspect.signature(obj))
@@ -130,15 +104,13 @@ def _get_callable_signature(name: str, obj) -> Optional[str]:
         prefix = 'def '
     else:
         prefix = ''
-    return f'{STYLE_KEYWORD}{prefix}{STYLE_CALLABLE}{name}{STYLE_SIGNATURE}{_signature}{RESET}'
-
+    return f'{Style.STYLE_KEYWORD}{prefix}{Style.STYLE_CALLABLE}{name}{Style.STYLE_SIGNATURE}{_signature}{Style.RESET}'
 
 def _get_source_code(obj) -> Optional[str]:
     try:
         return inspect.getsource(obj)
     except (OSError, TypeError, IndentationError) as e:
         return f'failed to get source code: {type(e)}: {e}'
-
 
 def _get_doc(obj, long: bool) -> Optional[str]:
     doc = inspect.getdoc(obj)
@@ -147,24 +119,21 @@ def _get_doc(obj, long: bool) -> Optional[str]:
     doc = doc.strip()
     return doc if long else _shorten_string(doc)
 
-
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'  {STYLE_VARIABLE}{attr.name}{STYLE_CODE}: {type_str} = {value_str}'
-
+    return f'  {Style.STYLE_VARIABLE}{attr.name}{Style.STYLE_CODE}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute, config: InspectConfig) -> str:
     if not attr.signature:
         return f'  {attr.name}(…)'
     if attr.doc and not config.nodocs:
         if attr.doc.count('\n') == 0:
-            return f'  {attr.signature} {STYLE_DOCS}# {attr.doc}{RESET}'
+            return f'  {attr.signature} {Style.STYLE_DOCS}# {attr.doc}{Style.RESET}'
         else:
-            return f'  {attr.signature}:\n{STYLE_DOCS}"""\n{attr.doc}\n"""{RESET}'
+            return f'  {attr.signature}:\n{Style.STYLE_DOCS}"""\n{attr.doc}\n"""{Style.RESET}'
     else:
         return f'  {attr.signature}'
-
 
 def _format_short_value(value, long: bool) -> str:
     value_str = _format_value(value)
@@ -172,18 +141,17 @@ def _format_short_value(value, long: bool) -> str:
         return value_str
     return _shorten_string(value_str)
 
-
 def _format_value(value, indent: int = 0) -> str:
     if isinstance(value, str):
-        return f"{STYLE_STRING}'{value}'{RESET}"
+        return f"{Style.STYLE_STRING}'{value}'{Style.RESET}"
     if value is None:
-        return f'{STYLE_NONE}None{RESET}'
+        return f'{Style.STYLE_NONE}None{Style.RESET}'
     if value is True:
-        return f'{STYLE_TRUE}True{RESET}'
+        return f'{Style.STYLE_TRUE}True{Style.RESET}'
     if value is False:
-        return f'{STYLE_FALSE}False{RESET}'
+        return f'{Style.STYLE_FALSE}False{Style.RESET}'
     if isinstance(value, (int, float)):
-        return f'{STYLE_NUMBER}{value}{RESET}'
+        return f'{Style.STYLE_NUMBER}{value}{Style.RESET}'
     if isinstance(value, dict):
         return _format_dict_value(value, indent=indent+1)
     if isinstance(value, list):
@@ -191,13 +159,12 @@ def _format_value(value, indent: int = 0) -> str:
     str_val = str(value)
     angle_bracket_match = re.fullmatch(r'<(.*)>', str_val)
     if angle_bracket_match:
-        return f'{STYLE_CODE}<{STYLE_VARIABLE}{angle_bracket_match.group(1)}{STYLE_CODE}>{RESET}'
-    return f'{STYLE_STRING}{str_val}{RESET}'
-
+        return f'{Style.STYLE_CODE}<{Style.STYLE_VARIABLE}{angle_bracket_match.group(1)}{Style.STYLE_CODE}>{Style.RESET}'
+    return f'{Style.STYLE_STRING}{str_val}{Style.RESET}'
 
 def _format_dict_value(dic: Dict, indent: int) -> str:
     if indent > 30:
-        return f'{STYLE_FALSE}ERROR: too deeply nested{RESET}'
+        return f'{Style.STYLE_FALSE}ERROR: too deeply nested{Style.RESET}'
     lines: List[str] = []
     indentation = '    ' * indent
     for key, value in dic.items():
@@ -207,10 +174,9 @@ def _format_dict_value(dic: Dict, indent: int) -> str:
     if lines:
         small_indent = '    ' * (indent-1)
         middle_lines = '\n'.join(lines)
-        return f'{STYLE_CODE}{{{RESET}\n{middle_lines}\n{small_indent}{STYLE_CODE}}}{RESET}'
+        return f'{Style.STYLE_CODE}{{{Style.RESET}\n{middle_lines}\n{small_indent}{Style.STYLE_CODE}}}{Style.RESET}'
     else:
-        return f'{STYLE_CODE}{{}}{RESET}'
-
+        return f'{Style.STYLE_CODE}{{}}{Style.RESET}'
 
 def _format_list_value(lst: List, indent: int) -> str:
     lines: List[str] = []
@@ -220,17 +186,15 @@ def _format_list_value(lst: List, indent: int) -> str:
     if lines:
         small_indent = '    ' * (indent-1)
         middle_lines = '\n'.join(lines)
-        return f'{STYLE_CODE}[{RESET}\n{middle_lines}\n{small_indent}{STYLE_CODE}]{RESET}'
+        return f'{Style.STYLE_CODE}[{Style.RESET}\n{middle_lines}\n{small_indent}{Style.STYLE_CODE}]{Style.RESET}'
     else:
-        return f'{STYLE_CODE}[]{RESET}'
-
+        return f'{Style.STYLE_CODE}[]{Style.RESET}'
 
 def _format_type(type_: Type) -> str:
     module = type_.__module__
     if module is None or module == str.__class__.__module__:  # built-in type
-        return f'{STYLE_CODE}{type_.__name__}{RESET}'
-    return f'{STYLE_CODE}{module}.{type_.__name__}{RESET}'
-
+        return f'{Style.STYLE_CODE}{type_.__name__}{Style.RESET}'
+    return f'{Style.STYLE_CODE}{module}.{type_.__name__}{Style.RESET}'
 
 def _get_parent_types(type_: Type) -> Iterable[str]:
     if hasattr(type_, '__mro__'):
@@ -239,17 +203,15 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
                 continue
             yield _format_type(base_type)
 
-
 def _generate_caller_info() -> Iterable[str]:
     frame = _caller_stack_frame(6)
     if frame:
         frameinfo = inspect.getframeinfo(frame)
         if frameinfo.filename:
-            yield f'{STYLE_TRAIT}caller file: {STYLE_CODE}{frameinfo.filename}:{STYLE_NUMBER}{frameinfo.lineno}{RESET}'
+            yield f'{Style.STYLE_TRAIT}caller file: {Style.STYLE_CODE}{frameinfo.filename}:{Style.NUMBER}{frameinfo.lineno}{Style.RESET}'
         if frameinfo.code_context:
             code = '\n'.join(frameinfo.code_context).strip()
-            yield f'{STYLE_TRAIT}caller expression:{RESET} {code}'
-
+            yield f'{Style.STYLE_TRAIT}caller expression:{Style.RESET} {code}'
 
 def _shorten_string(text: str) -> str:
     first_line, _, rest = text.partition('\n')
@@ -257,8 +219,7 @@ def _shorten_string(text: str) -> str:
         first_line = first_line + '…'
     if len(first_line) > 100:
         first_line = first_line[:100] + '…'
-    return first_line + RESET
-
+    return first_line + Style.RESET
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
     public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
@@ -270,7 +231,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if public_vars or public_methods:
         yield ''
-        yield f'{STYLE_HEADER}Public attributes:{RESET}'
+        yield f'{Style.HEADER}Public attributes:{Style.RESET}'
         for attr in public_vars:
             yield _render_attr_variable(attr, config)
         if public_vars and public_methods:
@@ -280,7 +241,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
     
     if private_vars or private_methods:
         yield ''
-        yield f'{STYLE_HEADER}Private attributes:{RESET}'
+        yield f'{Style.HEADER}Private attributes:{Style.RESET}'
         for attr in private_vars:
             yield _render_attr_variable(attr, config)
         if private_vars and private_methods:
@@ -290,14 +251,13 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if config.dunder and (dunder_vars or dunder_methods):
         yield ''
-        yield f'{STYLE_HEADER}Dunder attributes:{RESET}'
+        yield f'{Style.HEADER}Dunder attributes:{Style.RESET}'
         for attr in dunder_vars:
             yield _render_attr_variable(attr, config)
         if dunder_vars and dunder_methods:
             yield ''
         for attr in dunder_methods:
             yield _render_attr_method(attr, config)
-
 
 def _caller_stack_frame(depth: int):
     frame = inspect.currentframe()
@@ -306,19 +266,16 @@ def _caller_stack_frame(depth: int):
             frame = frame.f_back
     return frame
 
-
 def _render_variables(variables: Dict[str, Any], title: str) -> Iterable[str]:
-    yield f'{STYLE_HEADER}{title}:{RESET}'
+    yield f'{Style.HEADER}{title}:{Style.RESET}'
     for name in sorted(variables.keys()):
         value = variables[name]
         value_str = _format_short_value(value, long=False)
         type_str = _format_type(type(value))
-        yield f'  {STYLE_VARIABLE}{name}{STYLE_CODE}: {type_str} = {value_str}'
-
+        yield f'  {Style.VARIABLE}{name}{Style.STYLE_CODE}: {type_str} = {value_str}'
 
 def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
-
 
 class Wat:
     '''Inspector instance to examine unknown objects with short operators'''
@@ -419,31 +376,4 @@ Call {STYLE_CODE}wat.globals{RESET} to inspect global variables.'''
     def __lshift__(self, other): return self.inspect(other)  # <<
     def __rshift__(self, other): return self.inspect(other)  # >>
     def __or__(self, other): return self.inspect(other)  # wat |
-    def __ror__(self, other): return self.inspect(other)  # | wat
-    def __lt__(self, other): return self.inspect(other)  # <
-
-    def __getattr__(self, name) -> Union['Wat', str, None]:
-        new_wat = self.copy() 
-        if name in {'short', 's'}:
-            new_wat._inspect_kwargs['short'] = True
-        elif name in {'long', 'dunder', 'code', 'nodocs', 'caller', 'all'}:
-            new_wat._inspect_kwargs[name] = True
-        elif name in {'ret', 'str', 'gray', 'color'}:
-            new_wat._config[name] = True
-        elif name == 'locals':
-            frame = _caller_stack_frame(2)
-            local_vars = frame.f_locals if frame else {}
-            return self._print_variables(local_vars, 'Local variables')
-        elif name == 'globals':
-            frame = _caller_stack_frame(2)
-            global_vars = frame.f_globals if frame else {}
-            return self._print_variables(global_vars, 'Global variables')
-        elif name == 'wat':
-            return self
-        else:
-            raise AttributeError
-        return new_wat
-
-
-RESET = '\033[0m'
-STYLE_BAR =
+    def __
