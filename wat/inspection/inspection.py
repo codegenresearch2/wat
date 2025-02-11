@@ -309,7 +309,7 @@ Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:
   .ret to return the inspected object
   .str to return the output string instead of printing
 Call wat.locals or wat() to inspect locals variables.
-Call wat.globals to inspect globals variables.
+Call wat.globals or wat.globals() to inspect globals variables.
 """.strip()
         if (not sys.stdout.isatty()) or ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
             text = _strip_color(text)
@@ -381,7 +381,7 @@ def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
 
 def _color_enabled() -> bool:
-    return not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true')
+    return not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true') or ("WAT_COLOR" in os.environ and os.environ["WAT_COLOR"] == 'true')
 
 def _build_locals_object():
     o = type('locals', (object,), {})()
