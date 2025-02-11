@@ -40,12 +40,12 @@ def inspect_format(
     all: bool = False,
 ) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller or all)
-    output = list(_produce_inspect_lines(obj, config))
+    output: List[str] = list(_yield_inspect_lines(obj, config))
 
-    if sys.stdout.isatty() and _color_enabled():
+    if sys.stdout.isatty() and _color_enabled():  # horizontal bar
         terminal_width = os.get_terminal_size().columns
-        output.insert(0, '─' * terminal_width)
-        output.append('─' * terminal_width)
+        output.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
+        output.append(STYLE_BLUE + '─' * terminal_width + RESET)
 
     text = '\n'.join(line for line in output if line is not None)
     if not _color_enabled():
@@ -53,14 +53,9 @@ def inspect_format(
     return text
 
 
-def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
+def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
-    repr_value = repr(obj)
-    if repr_value == str_value:
-        yield f'value: {str_value}'
-    else:
-        yield f'str: {str_value}'
-        yield f'repr: {repr_value}'
+    yield f'value: {str_value}'
 
     str_type = _format_type(type(obj))
     yield f'type: {str_type}'
@@ -277,76 +272,6 @@ def _shorten_string(text: str) -> str:
     return first_line
 
 
-def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
-    public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
-    private_vars = [a for a in attributes if a.private and not a.callable]
-    dunder_vars = [a for a in attributes if a.dunder and not a.callable]
-    public_methods = [a for a in attributes if not a.private and not a.dunder and a.callable]
-    private_methods = [a for a in attributes if a.private and a.callable]
-    dunder_methods = [a for a in attributes if a.dunder and a.callable]
-
-    if public_vars or public_methods:
-        yield ''
-        yield 'Public attributes:'
-        for attr in public_vars:
-            yield _render_attr_variable(attr, config)
-        if public_vars and public_methods:
-            yield ''
-        for attr in public_methods:
-            yield _render_attr_method(attr)
-
-    if private_vars or private_methods:
-        yield ''
-        yield 'Private attributes:'
-        for attr in private_vars:
-            yield _render_attr_variable(attr, config)
-        if private_vars and private_methods:
-            yield ''
-        for attr in private_methods:
-            yield _render_attr_method(attr)
-
-    if config.dunder and (dunder_vars or dunder_methods):
-        yield ''
-        yield 'Dunder attributes:'
-        for attr in dunder_vars:
-            yield _render_attr_variable(attr, config)
-        if dunder_vars and dunder_methods:
-            yield ''
-        for attr in dunder_methods:
-            yield _render_attr_method(attr)
-
-
-def _list_local_variables() -> Dict[str, Any]:
-    frame = inspect.currentframe()
-    try:
-        for _ in range(2):
-            if frame is not None:
-                frame = frame.f_back
-        return frame.f_locals if frame is not None else {}
-    finally:
-        del frame
-
-
-def _list_global_variables() -> Dict[str, Any]:
-    frame = inspect.currentframe()
-    try:
-        for _ in range(2):
-            if frame is not None:
-                frame = frame.f_back
-        return frame.f_globals if frame is not None else {}
-    finally:
-        del frame
-
-
-def _render_variables(variables: Dict[str, Any], title: str) -> Iterable[str]:
-    yield f'{title}:'
-    for name in sorted(variables.keys()):
-        value = variables[name]
-        value_str = _format_short_value(value, long=False)
-        type_str = _format_type(type(value))
-        yield f'  {name}: {type_str} = {value_str}'
-
-
 def _color_enabled() -> bool:
     env_color = {
         'false': False,
@@ -474,5 +399,19 @@ Call wat.globals to inspect global variables.'''
             raise AttributeError
         return new_wat
 
+
+RESET = '\033[0m'
+STYLE_BRIGHT = '\033[1m'
+STYLE_RED = '\033[0;31m'
+STYLE_BRIGHT_RED = '\033[1;31m'
+STYLE_GREEN = '\033[0;32m'
+STYLE_BRIGHT_GREEN = '\033[1;32m'
+STYLE_YELLOW = '\033[0;33m'
+STYLE_BRIGHT_YELLOW = '\033[1;33m'
+STYLE_BLUE = '\033[0;34m'
+STYLE_BRIGHT_BLUE = '\033[1;34m'
+STYLE_MAGENTA = '\033[0;35m'
+STYLE_CYAN = '\033[0;36m'
+STYLE_GRAY = '\033[2;37m'
 
 wat = Wat()
