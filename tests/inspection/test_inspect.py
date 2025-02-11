@@ -14,7 +14,7 @@ def test_inspect_primitive_var():
     assert strip_ansi_colors(output) == """
 value: None
 type: NoneType
-""".strip()
+"""
 
     output = inspect_format([5])
     assert_multiline_match(output, r"""
@@ -36,7 +36,7 @@ Public attributes:
   def remove\(value, /\): # Remove first occurrence of value.…
   def reverse\(\): # Reverse *IN PLACE*.
   def sort\(\*\*, key=None, reverse=False\): # Sort the list in ascending order and return None.…
-""".strip())
+""")
 
     output = inspect_format([5], dunder=True)
     assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output)
@@ -46,7 +46,7 @@ Public attributes:
 value: 'poo'
 type: str
 len: 3
-""".strip())
+""")
 
 
 def test_inspect_instance():
@@ -71,18 +71,18 @@ Public attributes:
   a: str = 'batman'
 
   def shout\(loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
-""".strip())
+""")
                            
     output = inspect_format(Hero)
     assert_multiline_match(output, r"""
 value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
 signature: class Hero\(name: str\)
-"""A hero"""
+'A hero'
 
 Public attributes:
   def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
-""".strip())
+""")
 
 
 def test_inspect_function():
@@ -98,11 +98,8 @@ def test_inspect_function():
 value: <function test_inspect_function.<locals>.foo at .*>
 type: function
 signature: def foo\(a: int, b: str = 'bar'\) -> str
-"""
-Do something
-dumb
-"""
-""".strip())
+'Do something\ndumb'
+""")
 
 
 def test_inspect_nested_dict():
@@ -135,7 +132,7 @@ value: {
 }
 type: dict
 len: 1
-""".strip())
+""")
 
 
 def test_inspect_datetime_repr():
@@ -145,7 +142,7 @@ str: 2023-08-01 00:00:00
 repr: datetime.datetime\(2023, 8, 1, 0, 0\)
 type: datetime.datetime
 parents: datetime.date
-""".strip())
+""")
 
 
 def test_inspect_long():
