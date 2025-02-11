@@ -27,7 +27,7 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         print(f'Code replaced in {dst_filename}')
 
     char_count_change = len(new_code) - len(old_code)
-    print(f'Character count change: {"+" if char_count_change >= 0 else ""}{char_count_change}')
+    print(f'Character count change: {"+" if char_count_change >= 0 else ""}{char_count_change} characters')
 
 
 if __name__ == '__main__':
