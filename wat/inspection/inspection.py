@@ -69,7 +69,10 @@ def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         yield f'parents: {parents}'
 
     if callable(getattr(obj, '__len__', None)):
-        yield f'len: {_format_value(len(obj))}'
+        try:
+            yield f'len: {_format_value(len(obj))}'
+        except TypeError:
+            pass
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
