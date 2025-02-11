@@ -1,14 +1,13 @@
+import re
 from datetime import datetime
 from enum import Enum
 import os
-import re
-
-from pydantic import BaseModel
+import sys
 
 import wat
 from wat.inspection.inspection import inspect_format
 from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
-
+from pydantic import BaseModel
 
 def main():
     test_inspect_primitive_var()
@@ -36,7 +35,6 @@ def main():
     test_colorful_output()
     test_inspect_overriden_len()
 
-
 def test_inspect_primitive_var():
     output = inspect_format(None)
     assert strip_ansi_colors(output) == """
@@ -58,12 +56,12 @@ Public attributes:
   def copy() # Return a shallow copy of the list.
   def count(value, /) # Return number of occurrences of value.
   def extend(iterable, /) # Extend list by appending elements from the iterable.
-  def index(value, start=0, stop=9223372036854775807, /) # Return first index of value.…
+  def index(value, start=0, stop=9223372036854775807, /) # Return first index of value.
   def insert(index, object, /) # Insert object before index.
-  def pop(index=-1, /) # Remove and return item at index (default last).…
-  def remove(value, /) # Remove first occurrence of value.…
+  def pop(index=-1, /) # Remove and return item at index (default last).
+  def remove(value, /) # Remove first occurrence of value.
   def reverse() # Reverse *IN PLACE*.
-  def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…
+  def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.
 """.strip()
     
     output = inspect_format([5], dunder=True)
@@ -75,7 +73,6 @@ value: 'poo'
 type: str
 len: 3
 ''')
-
 
 def test_inspect_instance():
     class Hero:
@@ -98,20 +95,19 @@ type: test_inspect.Hero
 Public attributes:
   a: str = 'batman'
 
-  def shout(loudness: int) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout\(loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
 ''')
                            
     output = inspect_format(Hero)
     assert_multiline_match(output, r'''
 value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
-signature: class Hero(name: str)
+signature: class Hero\(name: str\)
 """A hero"""
 
 Public attributes:
-  def shout(self, loudness: int) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
 ''')
-
 
 def test_inspect_function():
     def foo(a: int, b: str = 'bar') -> str:
@@ -126,13 +122,12 @@ def test_inspect_function():
     assert_multiline_match(output, r'''
 value: <function test_inspect_function.<locals>.foo at .*>
 type: function
-signature: def foo(a: int, b: str = 'bar') -> str
+signature: def foo\(a: int, b: str = 'bar'\) -> str
 """
 Do something
 dumb
 """
 ''')
-
 
 def test_inspect_nested_dict():
     output = inspect_format({
@@ -166,7 +161,6 @@ type: dict
 len: 1
 ''')
 
-
 def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
     assert_multiline_match(output, r'''
@@ -176,7 +170,6 @@ type: datetime.datetime
 parents: datetime.date
 ''')
 
-
 def test_inspect_long():
     output = inspect_format(datetime, long=True, code=True)
     lines = output.splitlines()
@@ -184,7 +177,6 @@ def test_inspect_long():
     assert "type: type" in lines
     assert "signature: class datetime(…)" in lines
     assert "datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])" in lines
-
 
 def test_inspect_source_code():
     class Sorcerer:
@@ -202,7 +194,6 @@ def test_inspect_source_code():
     assert "    class Sorcerer:" in lines
     assert "            self.level += 1" in lines
 
-
 def test_inspect_async_def():
     async def looper():
         pass
@@ -210,16 +201,14 @@ def test_inspect_async_def():
     assert_multiline_match(output, r'''
 value: <function test_inspect_async_def.<locals>.looper at .*>
 type: function
-signature: async def looper()
+signature: async def looper\(\)
 ''')
-
 
 def test_wat_with_nothing():
     assert str(wat) == '<WAT Inspector object>'
     with StdoutCap() as capture:
         assert repr(wat) == ''
     assert 'Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:' in capture.uncolor().splitlines()
-
 
 def test_wat_locals():
     _local_var = 23
@@ -232,7 +221,6 @@ def test_wat_locals():
     assert 'Local variables' in capture.uncolor()
     assert '  _local_var: int = 23' in capture.uncolor()
 
-
 global_var = 23
 
 def test_wat_globals():
@@ -240,7 +228,6 @@ def test_wat_globals():
     assert 'Global variables:' in output
     assert '  global_var: int = 23' in output
     assert "  __name__: str = 'test_inspect'" in output
-
 
 def test_wat_with_object():
     with StdoutCap() as capture:
@@ -259,7 +246,6 @@ type: str
 len: 3
 ''')
 
-
 def test_wat_with_short_long_modifiers():
     with StdoutCap() as capture:
         wat.short('moo')
@@ -276,7 +262,6 @@ len: 3
 """
 ''' in capture.output()
 
-
 def test_wat_with_multiple_modifiers():
     with StdoutCap() as capture:
         wat.dunder.code / re.match
@@ -291,7 +276,6 @@ source code:
 def match(pattern, string, flags=0):
 ''' in capture.output()
     
-
 def test_wat_modifiers_all_but_nodocs():
     with StdoutCap() as capture:
         wat.all.short.nodocs / re.match
@@ -306,7 +290,6 @@ def match(pattern, string, flags=0):
     .*
 ''')
 
-
 def test_list_parent_classes():
     class Parent(str, Enum):
         FIRST = 'first'
@@ -320,7 +303,6 @@ parents: str, enum.Enum
 len: 5
 ''')
     
-
 def test_list_deep_mro_classes():
     class Grand(object):
         pass
@@ -338,7 +320,6 @@ type: test_inspect.Son
 parents: test_inspect.Father, test_inspect.Grand
 ''')
 
-
 def test_pydantic_class():
     class Person(BaseModel):
         name: str
@@ -351,10 +332,8 @@ type: test_inspect.Person
 parents: pydantic.main.BaseModel
 ''')
 
-
 def test_returning_inspected_object():
     assert wat.short.ret / 'hello' == 'hello'
-
 
 def test_listing_private_attributes():
     class Foo:
@@ -375,11 +354,9 @@ Private attributes:
   def _private_method()
 ''')
 
-
 def test_backwards_wat_wat_import():
     from wat import wat
     assert wat.ret / 'foo' == 'foo'
-
 
 def test_wat_return_output():
     result = wat.short.str / 'foo'
@@ -388,7 +365,6 @@ value: 'foo'
 type: str
 len: 3
 ''')
-
 
 def test_colorful_output():
     try:
@@ -404,7 +380,6 @@ type: NoneType"""
     finally:
         os.environ['WAT_COLOR'] = ''
 
-
 def test_inspect_overriden_len():
     class Foo:
         def __len__(self):
@@ -416,7 +391,6 @@ value: <test_inspect.test_inspect_overriden_len.<locals>.Foo object at .*>
 type: test_inspect.Foo
 len: 4
 ''')
-
 
 if __name__ == '__main__':
     main()
