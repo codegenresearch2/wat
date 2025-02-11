@@ -56,18 +56,10 @@ def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bo
 
 def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
-    repr_value = repr(obj)
-    if repr_value == str_value:
-        yield f'value: {str_value}'
-    else:
-        yield f'str: {str_value}'
-        yield f'repr: {repr_value}'
+    yield str_value
 
     str_type = _format_type(type(obj))
     yield f'type: {str_type}'
-    parents = ', '.join(_get_parent_types(type(obj)))
-    if parents:
-        yield f'parents: {parents}'
 
     if callable(getattr(obj, '__len__', None)):
         try:
