@@ -48,8 +48,9 @@ def inspect_format(
     long: bool = False,
     code: bool = False,
     caller: bool = False,
+    all: bool = False,
 ) -> str:
-    config = InspectConfig(short=short, dunder=dunder, nodocs=nodocs, long=long, code=code, caller=caller)
+    config = InspectConfig(short=short or all, dunder=dunder or all, nodocs=nodocs or all, long=long or all, code=code or all, caller=caller or all)
     output: List[str] = list(_produce_inspect_lines(obj, config))
 
     if sys.stdout.isatty() and _color_enabled():  # horizontal bar
@@ -412,8 +413,8 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
     def __lt__(self, other): return self.inspect(other)  # <
 
     def __getattr__(self, name) -> Union['Wat', str, None]:
-        if name == 'nodocs':
-            self._inspect_kwargs['nodocs'] = True
+        if name in {'str', 'short', 'dunder', 'all', 'caller'}:
+            self._inspect_kwargs[name] = True
         else:
             raise AttributeError(f"Unknown attribute: {name}")
         return self
