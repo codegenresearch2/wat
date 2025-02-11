@@ -9,5 +9,5 @@ setup(
     install_requires=[
         # List your dependencies here
     ],
-    # Other setup parameters
+    # Additional setup parameters can be added here
 )
