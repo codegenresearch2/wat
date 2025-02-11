@@ -344,12 +344,12 @@ class Wat:
     def _print_help(self):
         text = f"""
 Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:
-  .short or .s to hide attributes (variables and methods)
-  .long to print non-abbreviated values and documentation
-  .dunder to print dunder attributes
-  .code to print source code of a function, method or class
-  .nodocs to hide documentation for functions and classes
-  .all to include all information
+  {STYLE_GREEN}.short{RESET} or {STYLE_GREEN}.s{RESET} to hide attributes (variables and methods)
+  {STYLE_GREEN}.long{RESET} to print non-abbreviated values and documentation
+  {STYLE_GREEN}.dunder{RESET} to print dunder attributes
+  {STYLE_GREEN}.code{RESET} to print source code of a function, method or class
+  {STYLE_GREEN}.nodocs{RESET} to hide documentation for functions and classes
+  {STYLE_GREEN}.all{RESET} to include all information
 Call wat.locals or wat() to inspect locals variables.
 Call wat.globals to inspect globals variables.
 """.strip()
