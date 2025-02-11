@@ -1,28 +1,29 @@
+from dataclasses import dataclass
 import inspect
 import os
 import re
 import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
+@dataclass
 class InspectConfig:
-    def __init__(self, short: bool, dunder: bool, nodocs: bool, long: bool, code: bool, caller: bool):
-        self.short = short
-        self.dunder = dunder
-        self.nodocs = nodocs
-        self.long = long
-        self.code = code
-        self.caller = caller
+    short: bool
+    dunder: bool
+    nodocs: bool
+    long: bool
+    code: bool
+    caller: bool
 
+@dataclass
 class InspectAttribute:
-    def __init__(self, name: str, value: Any, type_: Type, callable: bool, dunder: bool, private: bool, signature: Optional[str], doc: Optional[str]):
-        self.name = name
-        self.value = value
-        self.type = type_
-        self.callable = callable
-        self.dunder = dunder
-        self.private = private
-        self.signature = signature
-        self.doc = doc
+    name: str
+    value: Any
+    type_: Type
+    callable: bool
+    dunder: bool
+    private: bool
+    signature: Optional[str]
+    doc: Optional[str]
 
 def inspect_format(obj: Any, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, caller: bool = False, all: bool = False) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller or all)
@@ -65,7 +66,7 @@ def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         yield f'{STYLE_BRIGHT_BLUE}signature:{RESET} {signature}'
     
     if config.caller:
-        yield from _get_caller_info()
+        yield from _retrieve_caller_info()
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
@@ -223,7 +224,7 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
                 continue
             yield _format_type(base_type)
 
-def _get_caller_info() -> Iterable[str]:
+def _retrieve_caller_info() -> Iterable[str]:
     frame = inspect.currentframe()
     try:
         for _ in range(5):  # back to caller frame
@@ -413,4 +414,11 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
             new_wat._inspect_kwargs['short'] = True
         elif name == 'long':
             new_wat._inspect_kwargs['long'] = True
-        elif name == 'd
+        elif name == 'dunder' or name == 'd':
+            new_wat._inspect_kwargs['dunder'] = True
+        elif name == 'code':
+            new_wat._inspect_kwargs['code'] = True
+        elif name == 'nodocs':
+            new_wat._inspect_kwargs['nodocs'] = True
+        elif name == 'caller':
+            new_wat._inspect_
