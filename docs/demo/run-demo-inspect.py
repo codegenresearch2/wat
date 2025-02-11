@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
+import wat
 from livekey import animate_commands
 import re
-from wat import wat
 
 commands = [
     'python',
-    'from wat import wat',
+    'import wat',
     'wat / {7}',
     'wat.short / (1,)',
     'import re',
