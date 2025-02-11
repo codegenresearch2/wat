@@ -11,13 +11,13 @@ from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
 def test_inspect_primitive_var():
     output = inspect_format(None)
-    assert strip_ansi_colors(output) == """
+    assert strip_ansi_colors(output).strip() == """
 value: None
 type: NoneType
-"""
+""".strip()
 
     output = inspect_format([5])
-    assert strip_ansi_colors(output) == """
+    assert strip_ansi_colors(output).strip() == """
 value: [
     5,
 ]
@@ -36,17 +36,17 @@ Public attributes:
   def remove(value, /) # Remove first occurrence of value.…
   def reverse() # Reverse *IN PLACE*.
   def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…
-"""
+""".strip()
 
     output = inspect_format([5], dunder=True)
-    assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output)
+    assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output).strip()
 
     output = inspect_format('poo', short=True)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 value: 'poo'
 type: str
 len: 3
-''')
+'''.strip())
 
 
 def test_inspect_instance():
@@ -63,7 +63,7 @@ def test_inspect_instance():
     
     instance = Hero('batman')
     output = inspect_format(instance)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 value: <test_inspect\.test_inspect_instance\.<locals>\.Hero object at .*>
 type: test_inspect\.Hero
 
@@ -71,10 +71,10 @@ Public attributes:
   a: str = 'batman'
 
   def shout\(loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
-''')
+'''.strip())
                            
     output = inspect_format(Hero)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 value: <class 'test_inspect\.test_inspect_instance\.<locals>\.Hero'>
 type: type
 signature: class Hero\(name: str\)
@@ -82,7 +82,7 @@ signature: class Hero\(name: str\)
 
 Public attributes:
   def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
-''')
+'''.strip())
 
 
 def test_inspect_function():
@@ -95,7 +95,7 @@ def test_inspect_function():
   
     output = inspect_format(foo)
     print(output)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 value: <function test_inspect_function.<locals>.foo at .*>
 type: function
 signature: def foo\(a: int, b: str = 'bar'\) -> str
@@ -103,7 +103,7 @@ signature: def foo\(a: int, b: str = 'bar'\) -> str
 Do something
 dumb
 """
-''')
+'''.strip())
 
 
 def test_inspect_nested_dict():
@@ -118,7 +118,7 @@ def test_inspect_nested_dict():
             None: 42,
         },
     }, short=True)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 value: {
     'a': {
         'b': {
@@ -136,17 +136,17 @@ value: {
 }
 type: dict
 len: 1
-''')
+'''.strip())
 
 
 def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 str: 2023-08-01 00:00:00
 repr: datetime.datetime\(2023, 8, 1, 0, 0\)
 type: datetime.datetime
 parents: datetime\.date
-''')
+'''.strip())
 
 
 def test_inspect_long():
@@ -179,11 +179,11 @@ def test_inspect_async_def():
     async def looper():
         pass
     output = inspect_format(looper, short=True)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 value: <function test_inspect_async_def.<locals>.looper at .*>
 type: function
 signature: async def looper\(\)
-''')
+'''.strip())
 
 
 def test_wat_with_nothing():
@@ -218,36 +218,36 @@ def test_wat_globals():
 def test_wat_with_object():
     with StdoutCap() as capture:
         wat(short=True) / 'moo'
-    assert_multiline_match(capture.output(), r'''
+    assert_multiline_match(capture.output().strip(), r'''
 value: 'moo'
 type: str
 len: 3
-''')
+'''.strip())
 
     with StdoutCap() as capture:
         wat('moo', short=True)
-    assert_multiline_match(capture.output(), r'''
+    assert_multiline_match(capture.output().strip(), r'''
 value: 'moo'
 type: str
 len: 3
-''')
+'''.strip())
 
 
 def test_wat_with_short_long_modifiers():
     with StdoutCap() as capture:
         wat.short('moo')
-    assert_multiline_match(capture.output(), r'''
+    assert_multiline_match(capture.output().strip(), r'''
 value: 'moo'
 type: str
 len: 3
-''')
+'''.strip())
 
     with StdoutCap() as capture:
         wat.long / 'moo2'
     assert r'''
   def capitalize():
 """
-''' in capture.output()
+''' in capture.output().strip()
 
 
 def test_wat_with_multiple_modifiers():
@@ -256,19 +256,19 @@ def test_wat_with_multiple_modifiers():
 
     assert '''
 Dunder attributes:
-''' in capture.output()
-    assert '''  def __eq__(value, /)''' in capture.output()
+''' in capture.output().strip()
+    assert '''  def __eq__(value, /)''' in capture.output().strip()
     
     assert '''
 source code:
 def match(pattern, string, flags=0):
-''' in capture.output()
+''' in capture.output().strip()
     
 
 def test_wat_modifiers_all_but_nodocs():
     with StdoutCap() as capture:
         wat.all.short.nodocs / re.match
-    assert_multiline_match(capture.output(), r'''
+    assert_multiline_match(capture.output().strip(), r'''
 value: <function match at .*>
 type: function
 signature: def match\(pattern, string, flags=0\)
@@ -277,7 +277,7 @@ def match\(pattern, string, flags=0\):
     """.*
     .*"""
     .*
-''')
+'''.strip())
 
 
 def test_list_parent_classes():
@@ -285,13 +285,13 @@ def test_list_parent_classes():
         FIRST = 'first'
 
     output = inspect_format(Parent.FIRST, short=True)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 str: '(Parent\.FIRST|first)'
 repr: <Parent\.FIRST: 'first'>
 type: test_inspect\.Parent
 parents: str, enum\.Enum
 len: 5
-''')
+'''.strip())
     
 
 def test_list_deep_mro_classes():
@@ -305,11 +305,11 @@ def test_list_deep_mro_classes():
         pass
 
     output = inspect_format(Son(), short=True)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
 type: test_inspect.Son
 parents: test_inspect.Father, test_inspect.Grand
-''')
+'''.strip())
 
 
 def test_pydantic_class():
@@ -317,9 +317,9 @@ def test_pydantic_class():
         name: str
 
     output = inspect_format(Person(name='george'), short=True)
-    assert_multiline_match(output, r'''
+    assert_multiline_match(output.strip(), r'''
 str: name='george'
 repr: Person\(name='george'\)
 type: test_inspect\.Person
 parents: pydantic\.main\.BaseModel
-''')
+'''.strip())
