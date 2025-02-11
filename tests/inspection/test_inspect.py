@@ -174,8 +174,8 @@ def test_inspect_source_code():
 def test_inspect_async_def():
     async def looper():
         pass
-    output = inspect_format(looper, short=True)
+    output = inspect_format(looper)
     assert_multiline_match(output, r"""
 value: <function test_inspect_async_def.<locals>.looper at .*>
 type: function
-signature: async def looper\(\)"
+signature: async def looper\(\)""")
