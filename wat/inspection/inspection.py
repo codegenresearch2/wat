@@ -19,7 +19,7 @@ class InspectConfig:
 class InspectAttribute:
     name: str
     value: Any
-    type_: Type
+    type: Type
     callable: bool
     dunder: bool
     private: bool
@@ -179,7 +179,7 @@ def _get_doc(obj: Any, long: bool) -> Optional[str]:
 
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type)
+    type_str = _format_type(attr.type)  # Changed from type_ to type to match the gold code
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 
