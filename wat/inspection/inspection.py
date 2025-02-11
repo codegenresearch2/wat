@@ -25,7 +25,17 @@ class InspectAttribute:
     signature: Optional[str]
     doc: Optional[str]
 
-def inspect_format(obj: Any, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, caller: bool = False, all: bool = False) -> str:
+def inspect_format(
+    obj: Any,
+    *,
+    short: bool = False,
+    dunder: bool = False,
+    nodocs: bool = False,
+    long: bool = False,
+    code: bool = False,
+    caller: bool = False,
+    all: bool = False,
+) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller or all)
     output: List[str] = list(_yield_inspect_lines(obj, config))
 
@@ -419,6 +429,4 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
         elif name == 'code':
             new_wat._inspect_kwargs['code'] = True
         elif name == 'nodocs':
-            new_wat._inspect_kwargs['nodocs'] = True
-        elif name == 'caller':
-            new_wat._inspect_
+            new_wat._inspect_kwargs['nod
