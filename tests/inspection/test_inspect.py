@@ -27,12 +27,12 @@ Public attributes:
   def copy() # Return a shallow copy of the list.
   def count(value, /) # Return number of occurrences of value.
   def extend(iterable, /) # Extend list by appending elements from the iterable.
-  def index(value, start=0, stop=9223372036854775807, /) # Return first index of value.…
+  def index(value, start=0, stop=9223372036854775807, /) # Return first index of value.
   def insert(index, object, /) # Insert object before index.
-  def pop(index=-1, /) # Remove and return item at index (default last).…
-  def remove(value, /) # Remove first occurrence of value.…
+  def pop(index=-1, /) # Remove and return item at index (default last).
+  def remove(value, /) # Remove first occurrence of value.
   def reverse() # Reverse *IN PLACE*.
-  def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…
+  def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.
 """
 
     output = inspect_format([5], dunder=True)
@@ -61,7 +61,7 @@ def test_inspect_instance():
     instance = Hero('batman')
     output = inspect_format(instance)
     assert_multiline_match(output, r'''
-value: <test_inspect.Hero object at .*>
+value: <test_inspect.Hero object at 0x[0-9a-fA-F]+>
 type: test_inspect.Hero
 
 Public attributes:
@@ -92,7 +92,7 @@ def test_inspect_function():
   
     output = inspect_format(foo)
     assert_multiline_match(output, r'''
-value: <function test_inspect_function.<locals>.foo at .*>
+value: <function test_inspect_function.<locals>.foo at 0x[0-9a-fA-F]+>
 type: function
 signature: def foo(a: int, b: str = 'bar') -> str
 """
@@ -176,7 +176,7 @@ def test_inspect_async_def():
         pass
     output = inspect_format(looper, short=True)
     assert_multiline_match(output, r'''
-value: <function test_inspect_async_def.<locals>.looper at .*>
+value: <function test_inspect_async_def.<locals>.looper at 0x[0-9a-fA-F]+>
 type: function
 signature: async def looper()
 ''')
@@ -264,7 +264,7 @@ def test_wat_modifiers_all_but_nodocs():
     with StdoutCap() as capture:
         wat.all.short.nodocs / re.match
     assert_multiline_match(capture.output(), r'''
-value: <function match at .*>
+value: <function match at 0x[0-9a-fA-F]+>
 type: function
 signature: def match(pattern, string, flags=0)
 source code:
@@ -301,7 +301,7 @@ def test_list_deep_mro_classes():
 
     output = inspect_format(Son(), short=True)
     assert_multiline_match(output, r'''
-value: <test_inspect.Son object at .*>
+value: <test_inspect.Son object at 0x[0-9a-fA-F]+>
 type: test_inspect.Son
 parents: test_inspect.Father, test_inspect.Grand
 ''')
@@ -335,7 +335,7 @@ def test_listing_private_attributes():
     
     output = inspect_format(Foo('bar'))
     assert_multiline_match(output, r'''
-value: <test_inspect.Foo object at .*>
+value: <test_inspect.Foo object at 0x[0-9a-fA-F]+>
 type: test_inspect.Foo
 
 Private attributes:
@@ -379,7 +379,7 @@ def test_inspect_overriden_len():
 
     output = inspect_format(Foo())
     assert_multiline_match(output, r'''
-value: <test_inspect.Foo object at .*>
+value: <test_inspect.Foo object at 0x[0-9a-fA-F]+>
 type: test_inspect.Foo
 len: 4
 ''')
