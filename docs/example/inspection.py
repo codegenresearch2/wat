@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import wat
+from wat import wat
 from pydantic import BaseModel
 
 
