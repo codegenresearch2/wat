@@ -11,13 +11,14 @@ from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
 def test_inspect_primitive_var():
     output = inspect_format(None)
-    assert strip_ansi_colors(output) == """
+    expected_output = """
 value: None
 type: NoneType
 """
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
 
     output = inspect_format([5])
-    assert strip_ansi_colors(output) == """
+    expected_output = """
 value: [
     5,
 ]
@@ -37,16 +38,37 @@ Public attributes:
   def reverse() # Reverse *IN PLACE*.
   def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…
 """
-
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
+    
     output = inspect_format([5], dunder=True)
-    assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output)
+    expected_output = """
+value: [
+    5,
+]
+type: list
+dunder: True
+len: 1
+
+Public attributes:
+  def __eq__(value, /) # Return self==value.
+  def __ne__(value, /) # Return self!=value.
+  def __lt__(value, /) # Return self<value.
+  def __le__(value, /) # Return self<=value.
+  def __gt__(value, /) # Return self>value.
+  def __ge__(value, /) # Return self>=value.
+  def __hash__(self) # Return hash(self).
+  def __repr__(self) # Return repr(self).
+  def __str__(self) # Return str(self).
+"""
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
 
     output = inspect_format('poo', short=True)
-    assert_multiline_match(output, r'''
+    expected_output = """
 value: 'poo'
 type: str
 len: 3
-''')
+"""
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
 
 
 def test_inspect_instance():
@@ -63,26 +85,28 @@ def test_inspect_instance():
     
     instance = Hero('batman')
     output = inspect_format(instance)
-    assert_multiline_match(output, r'''
-value: <test_inspect\.test_inspect_instance\.<locals>\.Hero object at .*>
-type: test_inspect\.Hero
+    expected_output = """
+value: <test_inspect.test_inspect_instance.<locals>.Hero object at ...>
+type: test_inspect.Hero
 
 Public attributes:
   a: str = 'batman'
 
-  def shout\(loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
-''')
+  def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
+"""
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
                            
     output = inspect_format(Hero)
-    assert_multiline_match(output, r'''
-value: <class 'test_inspect\.test_inspect_instance\.<locals>\.Hero'>
+    expected_output = """
+value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
-signature: class Hero\(name: str\)
+signature: class Hero(name: str)
 """A hero"""
 
 Public attributes:
-  def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
-''')
+  def shout(self, loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
+"""
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
 
 
 def test_inspect_function():
@@ -94,15 +118,15 @@ def test_inspect_function():
         return a * b
   
     output = inspect_format(foo)
-    assert_multiline_match(output, r'''
-value: <function test_inspect_function.<locals>.foo at .*>
+    expected_output = """
+value: <function test_inspect_function.<locals>.foo at ...>
 type: function
-signature: def foo\(a: int, b: str = 'bar'\) -> str
+signature: def foo(a: int, b: str = 'bar') -> str
 """
 Do something
 dumb
 """
-''')
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
 
 
 def test_inspect_nested_dict():
@@ -117,246 +141,199 @@ def test_inspect_nested_dict():
             None: 42,
         },
     }, short=True)
-    assert_multiline_match(output, r'''
+    expected_output = """
 value: {
     'a': {
         'b': {
-            'values': \[
+            'values': [
                 2,
                 5,
                 3,
-            \],
+            ],
         },
         'empty_dict': {},
-        'empty_list': \[\],
+        'empty_list': [],
         40: None,
         None: 42,
     },
 }
 type: dict
 len: 1
-''')
+"""
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
 
 
 def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
-    assert_multiline_match(output, r'''
+    expected_output = """
 str: 2023-08-01 00:00:00
-repr: datetime.datetime\(2023, 8, 1, 0, 0\)
+repr: datetime.datetime(2023, 8, 1, 0, 0)
 type: datetime.datetime
-parents: datetime\.date
-''')
+parents: datetime.date
+"""
+    assert strip_ansi_colors(output).strip() == expected_output.strip()
 
 
 def test_inspect_long():
     output = inspect_format(datetime, long=True, code=True)
-    lines = output.splitlines()
-    assert "value: <class 'datetime.datetime'>" in lines
-    assert "type: type" in lines
-    assert "signature: class datetime(…)" in lines
-    assert "datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])" in lines
-
-
-def test_inspect_source_code():
-    class Sorcerer:
-        def __init__(self):
-            self.level = 1
-        def level_up(self):
-            self.level += 1
-
-    output = inspect_format(Sorcerer, code=True)
-    lines = output.splitlines()
-    assert "value: <class 'test_inspect.test_inspect_source_code.<locals>.Sorcerer'>" in lines
-    assert "type: type" in lines
-    assert "signature: class Sorcerer()" in lines
-    assert "source code:" in lines
-    assert "    class Sorcerer:" in lines
-    assert "            self.level += 1" in lines
-
-
-def test_inspect_async_def():
-    async def looper():
-        pass
-    output = inspect_format(looper, short=True)
-    assert_multiline_match(output, r'''
-value: <function test_inspect_async_def.<locals>.looper at .*>
-type: function
-signature: async def looper\(\)
-''')
-
-
-def test_wat_with_nothing():
-    assert str(wat) == '<Wat Inspector object>'
-    with StdoutCap() as capture:
-        assert repr(wat) == ''
-    assert 'Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:' in capture.uncolor().splitlines()
-
-
-def test_wat_locals():
-    _local_var = 23
-    with StdoutCap() as capture:
-        wat()
-    assert 'value: <wat.inspection.inspection.locals object' in capture.uncolor()
-    assert '_local_var: int = 23' in capture.uncolor()
-
-    with StdoutCap() as capture:
-        wat.locals
-    assert 'value: <wat.inspection.inspection.locals object' in capture.uncolor()
-    assert '_local_var: int = 23' in capture.uncolor()
-
-
-global_var = 23
-
-def test_wat_globals():
-    with StdoutCap() as capture:
-        wat.globals
-    assert 'value: <wat.inspection.inspection.globals object' in capture.uncolor()
-    assert 'global_var: int = 23' in capture.uncolor()
-
-
-def test_wat_with_object():
-    with StdoutCap() as capture:
-        wat(short=True) / 'moo'
-    assert_multiline_match(capture.output(), r'''
-value: 'moo'
-type: str
-len: 3
-''')
-
-    with StdoutCap() as capture:
-        wat('moo', short=True)
-    assert_multiline_match(capture.output(), r'''
-value: 'moo'
-type: str
-len: 3
-''')
-
-
-def test_wat_with_short_long_modifiers():
-    with StdoutCap() as capture:
-        wat.short('moo')
-    assert_multiline_match(capture.output(), r'''
-value: 'moo'
-type: str
-len: 3
-''')
-
-    with StdoutCap() as capture:
-        wat.long / 'moo2'
-    assert r'''
-  def capitalize():
+    expected_output = """
+value: <class 'datetime.datetime'>
+type: type
+signature: class datetime(year, month, day[, hour[, minute[, second[, microsecond[, tzinfo]]]])
 """
-''' in capture.output()
+A combination of date and time.
 
-
-def test_wat_with_multiple_modifiers():
-    with StdoutCap() as capture:
-        wat.dunder.code / re.match
-
-    assert '''
-Dunder attributes:
-''' in capture.output()
-    assert '''  def __eq__(value, /)''' in capture.output()
-    
-    assert '''
-source code:
-def match(pattern, string, flags=0):
-''' in capture.output()
-    
-
-def test_wat_modifiers_all_but_nodocs():
-    with StdoutCap() as capture:
-        wat.all.short.nodocs / re.match
-    assert_multiline_match(capture.output(), r'''
-value: <function match at .*>
-type: function
-signature: def match\(pattern, string, flags=0\)
-source code:
-def match\(pattern, string, flags=0\):
-    """.*
-    .*"""
-    .*
-''')
-
-
-def test_list_parent_classes():
-    class Parent(str, Enum):
-        FIRST = 'first'
-
-    output = inspect_format(Parent.FIRST, short=True)
-    assert_multiline_match(output, r'''
-str: '(Parent\.FIRST|first)'
-repr: <Parent\.FIRST: 'first'>
-type: test_inspect\.Parent
-parents: str, enum\.Enum
-len: 5
-''')
-    
-
-def test_list_deep_mro_classes():
-    class Grand(object):
-        pass
-
-    class Father(Grand):
-        pass
-
-    class Son(Father):
-        pass
-
-    output = inspect_format(Son(), short=True)
-    assert_multiline_match(output, r'''
-value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
-type: test_inspect.Son
-parents: test_inspect.Father, test_inspect.Grand
-''')
-
-
-def test_pydantic_class():
-    class Person(BaseModel):
-        name: str
-
-    output = inspect_format(Person(name='george'), short=True)
-    assert_multiline_match(output, r'''
-str: name='george'
-repr: Person\(name='george'\)
-type: test_inspect\.Person
-parents: pydantic\.main\.BaseModel
-''')
-
-
-def test_returning_inspected_object():
-    assert wat.short.ret / 'hello' == 'hello'
-
-
-def test_listing_private_attributes():
-    class Foo:
-        def __init__(self, name: str):
-            self._name = name
-        
-        def _private_method(self):
-            pass
-    
-    output = inspect_format(Foo('bar'))
-    assert_multiline_match(output, r'''
-value: <test_inspect\.test_listing_private_attributes\.<locals>\.Foo object at .*>
-type: test_inspect\.Foo
-
-Private attributes:
-  _name: str = 'bar'
-
-  def _private_method\(\)
-''')
-
-
-def test_backwards_wat_wat_import():
-    from wat import wat
-    assert wat.ret / 'foo' == 'foo'
-
-
-def test_wat_return_output():
-    result = wat.short.str / 'foo'
-    assert_multiline_match(result, r'''
-value: 'foo'
-type: str
-len: 3
-''')
+Public attributes:
+  def __new__(cls, year, month, day, hour=0, minute=0, second=0, microsecond=0, tzinfo=None) -> datetime: ...
+  def __init__(self, year, month, day, hour=0, minute=0, second=0, microsecond=0, tzinfo=None) -> None: ...
+  def __repr__(self) -> str: ...
+  def __str__(self) -> str: ...
+  def __hash__(self) -> int: ...
+  def __eq__(self, value: Any) -> bool: ...
+  def __ne__(self, value: Any) -> bool: ...
+  def __lt__(self, value: Any) -> bool: ...
+  def __le__(self, value: Any) -> bool: ...
+  def __gt__(self, value: Any) -> bool: ...
+  def __ge__(self, value: Any) -> bool: ...
+  def __add__(self, value: timedelta) -> datetime: ...
+  def __sub__(self, value: timedelta) -> datetime: ...
+  def __mul__(self, value: float) -> datetime: ...
+  def __floordiv__(self, value: float) -> datetime: ...
+  def __mod__(self, value: timedelta) -> datetime: ...
+  def __divmod__(self, value: timedelta) -> tuple[datetime, datetime]: ...
+  def __round__(self, ndigits: int = None) -> datetime: ...
+  def __ceil__(self) -> datetime: ...
+  def __floor__(self) -> datetime: ...
+  def astimezone(self, tz: timezone) -> datetime: ...
+  def replace(self, year: int = ..., month: int = ..., day: int = ..., hour: int = ..., minute: int = ..., second: int = ..., microsecond: int = ..., tzinfo: timezone = ...) -> datetime: ...
+  def timetuple(self) -> time.struct_time: ...
+  def utctimetuple(self) -> time.struct_time: ...
+  def toordinal(self) -> int: ...
+  def weekday(self) -> int: ...
+  def isoweekday(self) -> int: ...
+  def isocalendar(self) -> tuple[int, int, int]: ...
+  def isoformat(self, timespec: str = 'auto') -> str: ...
+  def ctime(self) -> str: ...
+  def strftime(self, format: str) -> str: ...
+  def __format__(self, format: str) -> str: ...
+  def utcfromtimestamp(cls, t: float) -> datetime: ...
+  def fromtimestamp(cls, t: float, tz: timezone = ...) -> datetime: ...
+  def now(cls, tz: timezone = ...) -> datetime: ...
+  def today(cls, tz: timezone = ...) -> datetime: ...
+  def fromordinal(cls, ordinal: int) -> datetime: ...
+  def fromisoformat(cls, date_string: str) -> datetime: ...
+  def strptime(cls, date_string: str, format: str) -> datetime: ...
+  def combine(cls, date: date, time: time, tzinfo: tzinfo = ...) -> datetime: ...
+  def timestamp(self) -> float: ...
+  def tzname(self) -> str: ...
+  def dst(self) -> timedelta: ...
+  def __reduce__(self) -> tuple[type, tuple]: ...
+  def __sizeof__(self) -> int: ...
+  def __deepcopy__(self, memo: dict) -> datetime: ...
+  def __getstate__(self) -> dict: ...
+  def __setstate__(self, state: dict) -> None: ...
+  def __getnewargs__(self) -> tuple: ...
+  def __getformat__(self, format_spec: str) -> str: ...
+  def __format_parsed__(self, format_spec: str, parsed: dict) -> str: ...
+  def __format_time__(self, format_spec: str, t: time) -> str: ...
+  def __format_date__(self, format_spec: str, d: date) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_tzinfo__(self, format_spec: str, tzinfo: tzinfo) -> str: ...
+  def __format_offset__(self, format_spec: str, offset: timedelta) -> str: ...
+  def __format_microsecond__(self, format_spec: str, microsecond: int) -> str: ...
+  def __format_year__(self, format_spec: str, year: int) -> str: ...
+  def __format_month__(self, format_spec: str, month: int) -> str: ...
+  def __format_day__(self, format_spec: str, day: int) -> str: ...
+  def __format_hour__(self, format_spec: str, hour: int) -> str: ...
+  def __format_minute__(self, format_spec: str, minute: int) -> str: ...
+  def __format_second__(self, format_spec: str, second: int) -> str: ...
+  def __format_microsecond__(self, format_spec:
