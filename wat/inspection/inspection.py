@@ -1,8 +1,8 @@
+import sys
 from dataclasses import dataclass
 import inspect
 import os
 import re
-import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
 @dataclass
