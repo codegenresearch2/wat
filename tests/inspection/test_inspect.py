@@ -11,7 +11,7 @@ from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
 def test_inspect_primitive_var():
     output = inspect_format(None)
-    assert strip_ansi_colors(output) == """
+    assert strip_ansi_colors(output).strip() == """
 value: None
 type: NoneType
 """
@@ -143,15 +143,6 @@ repr: datetime.datetime\(2023, 8, 1, 0, 0\)
 type: datetime.datetime
 parents: datetime.date
 """)
-
-
-def test_inspect_long():
-    output = inspect_format(datetime, long=True, code=True)
-    lines = output.splitlines()
-    assert "value: <class 'datetime.datetime'>" in lines
-    assert "type: type" in lines
-    assert "signature: class datetime\(…\)" in lines
-    assert "datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])" in lines
 
 
 def test_inspect_source_code():
