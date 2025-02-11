@@ -26,6 +26,7 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         Path(dst_filename).write_text(replaced_contents[i])
         print(f'Code replaced in {dst_filename}')
 
+    print('All replacements have been made.')
+
 if __name__ == '__main__':
     _regenerate(sys.argv[1], sys.argv[2:])
-    print('All replacements have been made.')
