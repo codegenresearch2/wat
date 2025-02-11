@@ -38,12 +38,12 @@ def inspect_format(
     all: bool = False,
 ) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
-    lines = list(_produce_inspect_lines(obj, config))
+    output = list(_produce_inspect_lines(obj, config))
     if sys.stdout.isatty() and _color_enabled():
         terminal_width = os.get_terminal_size().columns
-        lines.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
-        lines.append(STYLE_BLUE + '─' * terminal_width + RESET)
-    return '\n'.join(lines)
+        output.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
+        output.append(STYLE_BLUE + '─' * terminal_width + RESET)
+    return '\n'.join(output)
 
 
 def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
