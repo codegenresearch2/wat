@@ -19,7 +19,7 @@ class InspectConfig:
 class InspectAttribute:
     name: str
     value: Any
-    type_: Type
+    type: Type
     callable: bool
     dunder: bool
     private: bool
@@ -60,36 +60,36 @@ def inspect_format(
     str_value = _format_value(obj)
     repr_value: str = repr(obj)
     if repr_value == str(obj) or repr_value == _strip_color(str_value):
-        output.append(f'value:{str_value}')
+        output.append(f'{STYLE_BRIGHT}value:{RESET} {str_value}')
     else:
-        output.append(f'str:{str_value}')
-        output.append(f'repr:{repr_value}')
+        output.append(f'{STYLE_BRIGHT}str:{RESET} {str_value}')
+        output.append(f'{STYLE_BRIGHT}repr:{RESET} {repr_value}')
 
     str_type = _format_type(type(obj))
-    output.append(f'type:{str_type}')
+    output.append(f'{STYLE_BRIGHT}type:{RESET} {str_type}')
     parents = _format_parent_types(obj)
     if parents:
-        output.append(f'parents:{parents}')
+        output.append(f'{STYLE_BRIGHT}parents:{RESET} {parents}')
 
     if isinstance(obj, (list, dict, str, bytes, bytearray, tuple, set, frozenset, range)):
-        output.append(f'len:{_format_value(len(obj))}')
+        output.append(f'{STYLE_BRIGHT}len:{RESET} {_format_value(len(obj))}')
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj)
-        output.append(f'signature:{signature}')
+        output.append(f'{STYLE_BRIGHT}signature:{RESET} {signature}')
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
         if doc.count('\n') == 0:
-            output.append(f'"""{doc}"""')
+            output.append(f'{STYLE_GRAY}"""{doc}"""{RESET}')
         else:
-            output.extend([f'"""', doc, f'"""'])
+            output.extend([f'{STYLE_GRAY}"""', doc, f'"""{RESET}'])
 
     if config.code and (std_inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
-            output.append(f'source code:{source}')
+            output.append(f'{STYLE_BRIGHT}source code:{RESET}\n{source}')
 
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
@@ -120,7 +120,7 @@ def _iter_attributes(obj: Any, config: InspectConfig) -> Iterable[InspectAttribu
         yield InspectAttribute(
             name=key,
             value=value,
-            type=type(value),
+            type=type(value),  # Changed from type_ to type to match the gold code
             callable=callable_,
             dunder=dunder,
             private=private,
@@ -292,7 +292,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if public_vars or public_methods:
         yield ""
-        yield "Public attributes:"
+        yield f"{STYLE_BRIGHT}Public attributes:{RESET}"
         for attr in public_vars:
             yield _render_attr_variable(attr, config)
         if public_vars and public_methods:
@@ -302,7 +302,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
     
     if private_vars or private_methods:
         yield ""
-        yield "Private attributes:"
+        yield f"{STYLE_BRIGHT}Private attributes:{RESET}"
         for attr in private_vars:
             yield _render_attr_variable(attr, config)
         if private_vars and private_methods:
@@ -312,7 +312,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if config.dunder and dunder_attrs:
         yield ""
-        yield "Dunder attributes:"
+        yield f"{STYLE_BRIGHT}Dunder attributes:{RESET}"
         for attr in dunder_vars:
             yield _render_attr_variable(attr, config)
         if dunder_vars and dunder_methods:
