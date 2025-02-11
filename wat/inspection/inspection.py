@@ -1,30 +1,45 @@
-from dataclasses import dataclass
-import inspect as std_inspect
-import os
-import re
 import sys
+import re
+import os
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
 
-@dataclass
 class InspectConfig:
-    short: bool
-    dunder: bool
-    nodocs: bool
-    long: bool
-    code: bool
+    def __init__(self, short: bool, dunder: bool, nodocs: bool, long: bool, code: bool):
+        self.short = short
+        self.dunder = dunder
+        self.nodocs = nodocs
+        self.long = long
+        self.code = code
 
 
-@dataclass
 class InspectAttribute:
-    name: str
-    value: Any
-    type: Type
-    callable: bool
-    dunder: bool
-    private: bool
-    signature: Optional[str]
-    doc: Optional[str]
+    def __init__(self, name: str, value: Any, type_: Type, callable_: bool, dunder: bool, private: bool, signature: Optional[str], doc: Optional[str]):
+        self.name = name
+        self.value = value
+        self.type = type_
+        self.callable = callable_
+        self.dunder = dunder
+        self.private = private
+        self.signature = signature
+        self.doc = doc
+
+
+RESET = '\033[0m'
+STYLE_BRIGHT = '\033[1m'
+STYLE_DIM = '\033[2m'
+STYLE_RED = '\033[0;31m'
+STYLE_BRIGHT_RED = '\033[1;31m'
+STYLE_GREEN = '\033[0;32m'
+STYLE_BRIGHT_GREEN = '\033[1;32m'
+STYLE_YELLOW = '\033[0;33m'
+STYLE_BRIGHT_YELLOW = '\033[1;33m'
+STYLE_BLUE = '\033[0;34m'
+STYLE_BRIGHT_BLUE = '\033[1;34m'
+STYLE_MAGENTA = '\033[0;35m'
+STYLE_CYAN = '\033[0;36m'
+STYLE_WHITE = '\033[0;37m'
+STYLE_GRAY = '\033[2;37m'
 
 
 def inspect_format(
@@ -78,11 +93,10 @@ def inspect_format(
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         output.extend(_render_attrs_section(attributes, config))
 
-    if sys.stdout.isatty():  # horizontal bar
+    if sys.stdout.isatty() and not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
         terminal_width = os.get_terminal_size().columns
-        if not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
-            output.insert(0, '─' * terminal_width)
-            output.append('─' * terminal_width)
+        output.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
+        output.append(STYLE_BLUE + '─' * terminal_width + RESET)
 
     text = '\n'.join(line for line in output if line is not None)
     if (not sys.stdout.isatty()) or ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
@@ -164,7 +178,7 @@ def _get_doc(obj: Any, long: bool) -> Optional[str]:
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'  {attr.name}: {type_str} = {value_str}'
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 
 def _render_attr_method(attr: InspectAttribute) -> str:
@@ -174,7 +188,7 @@ def _render_attr_method(attr: InspectAttribute) -> str:
         if attr.doc.count('\n') == 0:
             return f'  {attr.signature}  # {attr.doc}'
         else:
-            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""'
+            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""\n'
     else:
         return f'  {attr.signature}'
 
