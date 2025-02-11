@@ -40,7 +40,7 @@ def test_inspect_primitive_var():
     assert strip_ansi_colors(output) == """
 value: None
 type: NoneType
-""".strip()
+"""
 
     output = inspect_format([5])
     assert strip_ansi_colors(output) == """
@@ -62,8 +62,8 @@ Public attributes:
   def remove(value, /) # Remove first occurrence of value.
   def reverse() # Reverse *IN PLACE*.
   def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.
-""".strip()
-    
+"""
+
     output = inspect_format([5], dunder=True)
     assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output)
 
