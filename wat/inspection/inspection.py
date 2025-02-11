@@ -5,8 +5,38 @@ import re
 import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
+@dataclass
+class InspectConfig:
+    short: bool
+    dunder: bool
+    nodocs: bool
+    long: bool
+    code: bool
 
-def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, all: bool = False) -> str:
+RESET = '\033[0m'
+STYLE_BRIGHT = '\033[1m'
+STYLE_RED = '\033[0;31m'
+STYLE_BRIGHT_RED = '\033[1;31m'
+STYLE_GREEN = '\033[0;32m'
+STYLE_BRIGHT_GREEN = '\033[1;32m'
+STYLE_YELLOW = '\033[0;33m'
+STYLE_BRIGHT_YELLOW = '\033[1;33m'
+STYLE_BLUE = '\033[0;34m'
+STYLE_BRIGHT_BLUE = '\033[1;34m'
+STYLE_MAGENTA = '\033[0;35m'
+STYLE_CYAN = '\033[0;36m'
+STYLE_GRAY = '\033[2;37m'
+
+def inspect_format(
+    obj,
+    *,
+    short: bool = False,
+    dunder: bool = False,
+    nodocs: bool = False,
+    long: bool = False,
+    code: bool = False,
+    all: bool = False,
+) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
     output: List[str] = list(_produce_inspect_lines(obj, config))
 
@@ -19,7 +49,6 @@ def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bo
     if not _color_enabled():
         text = _strip_color(text)
     return text
-
 
 def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
@@ -63,7 +92,6 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         yield from _render_attrs_section(attributes, config)
 
-
 def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
     for key in dir(obj):
         dunder = key.startswith('__') and key.endswith('__')
@@ -88,7 +116,6 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
             doc=doc,
         )
 
-
 def _get_callable_signature(name: str, obj) -> Optional[str]:
     try:
         _signature = str(inspect.signature(obj))
@@ -105,13 +132,11 @@ def _get_callable_signature(name: str, obj) -> Optional[str]:
         prefix = ''
     return f'{STYLE_BLUE}{prefix}{STYLE_BRIGHT_GREEN}{name}{STYLE_GREEN}{_signature}{RESET}'
 
-
 def _get_source_code(obj) -> Optional[str]:
     try:
         return inspect.getsource(obj)
     except (OSError, TypeError, IndentationError) as e:
         return f'failed to get source code: {type(e)}: {e}'
-
 
 def _get_doc(obj, long: bool) -> Optional[str]:
     doc = inspect.getdoc(obj)
@@ -123,12 +148,10 @@ def _get_doc(obj, long: bool) -> Optional[str]:
     else:
         return _shorten_string(doc)
 
-
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
-
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
@@ -141,13 +164,11 @@ def _render_attr_method(attr: InspectAttribute) -> str:
     else:
         return f'  {attr.signature}'
 
-
 def _format_short_value(value, long: bool) -> str:
     value_str = _format_value(value)
     if long:
         return value_str
     return _shorten_string(value_str)
-
 
 def _format_value(value, indent: int = 0) -> str:
     if isinstance(value, str):
@@ -170,7 +191,6 @@ def _format_value(value, indent: int = 0) -> str:
         return f'{STYLE_YELLOW}<{STYLE_BRIGHT_YELLOW}{angle_bracket_match.group(1)}{STYLE_YELLOW}>{RESET}'
     return f'{STYLE_GREEN}{str_val}{RESET}'
 
-
 def _format_dict_value(dic: Dict, indent: int) -> str:
     if indent > 30:
         return f'{STYLE_BRIGHT_RED}ERROR: too deeply nested{RESET}'
@@ -187,7 +207,6 @@ def _format_dict_value(dic: Dict, indent: int) -> str:
     else:
         return f'{STYLE_YELLOW}{{}}{RESET}'
 
-
 def _format_list_value(lst: List, indent: int) -> str:
     lines: List[str] = []
     for value in lst:
@@ -200,13 +219,11 @@ def _format_list_value(lst: List, indent: int) -> str:
     else:
         return f'{STYLE_YELLOW}[]{RESET}'
 
-
 def _format_type(type_: Type) -> str:
     module = type_.__module__
     if module is None or module == str.__class__.__module__:  # built-in type
         return f'{STYLE_YELLOW}{type_.__name__}{RESET}'
     return f'{STYLE_YELLOW}{module}.{type_.__name__}{RESET}'
-
 
 def _get_parent_types(type_: Type) -> Iterable[str]:
     if hasattr(type_, '__mro__'):
@@ -215,7 +232,6 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
                 continue
             yield _format_type(base_type)
 
-
 def _shorten_string(text: str) -> str:
     first_line, _, rest = text.partition('\n')
     if rest:
@@ -223,7 +239,6 @@ def _shorten_string(text: str) -> str:
     if len(first_line) > 100:
         first_line = first_line[:100] + '…'
     return first_line + RESET
-
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
     public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
@@ -263,7 +278,6 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
         for attr in dunder_methods:
             yield _render_attr_method(attr)
 
-
 def _list_local_variables() -> Dict[str, Any]:
     frame = inspect.currentframe()
     try:
@@ -273,7 +287,6 @@ def _list_local_variables() -> Dict[str, Any]:
         return frame.f_locals if frame is not None else {}
     finally:
         del frame
-
 
 def _list_global_variables() -> Dict[str, Any]:
     frame = inspect.currentframe()
@@ -285,7 +298,6 @@ def _list_global_variables() -> Dict[str, Any]:
     finally:
         del frame
 
-
 def _render_variables(variables: Dict[str, Any], title: str) -> Iterable[str]:
     yield f'{STYLE_BRIGHT}{title}:{RESET}'
     for name in sorted(variables.keys()):
@@ -293,7 +305,6 @@ def _render_variables(variables: Dict[str, Any], title: str) -> Iterable[str]:
         value_str = _format_short_value(value, long=False)
         type_str = _format_type(type(value))
         yield f'  {STYLE_BRIGHT_YELLOW}{name}{STYLE_YELLOW}: {type_str} = {value_str}'
-
 
 def _color_enabled() -> bool:
     env_color = {
@@ -304,10 +315,8 @@ def _color_enabled() -> bool:
         return env_color
     return sys.stdout.isatty()
 
-
 def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
-
 
 class Wat:
     '''Inspector instance to examine unknown objects with short operators'''
@@ -408,26 +417,3 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
             new_wat._config['ret'] = True
         elif name == 'str':
             new_wat._config['str'] = True
-        elif name == 'gray':
-            new_wat._config['gray'] = True
-        elif name == 'locals':
-            return self._print_variables(_list_local_variables(), 'Local variables')
-        elif name == 'globals':
-            return self._print_variables(_list_global_variables(), 'Global variables')
-        elif name == 'wat':
-            return self
-        else:
-            raise AttributeError
-        return new_wat
-
-
-RESET = '\033[0m'
-STYLE_BRIGHT = '\033[1m'
-STYLE_RED = '\033[0;31m'
-STYLE_BRIGHT_RED = '\033[1;31m'
-STYLE_GREEN = '\033[0;32m'
-STYLE_BRIGHT_GREEN = '\033[1;32m'
-STYLE_YELLOW = '\033[0;33m'
-STYLE_BRIGHT_YELLOW = '\033[1;33m'
-STYLE_BLUE = '\033[0;34m'
-STYLE_BRIGHT_
