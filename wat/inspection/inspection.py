@@ -1,9 +1,9 @@
+import os
+import sys
+from typing import Any, Dict, List, Optional, Type, Iterable, Union
 from dataclasses import dataclass
 import inspect
-import os
 import re
-import sys
-from typing import Any, Dict, List, Optional, Type, Iterable
 
 @dataclass
 class InspectConfig:
@@ -394,4 +394,4 @@ Call {STYLE_CODE}wat.globals{RESET} to inspect global variables.'''
         return sys.stdout.isatty()
 
     def _print_variables(self, variables: Dict[str, Any], title: str) -> Optional[str]:
-        lines = list(_render_variables(variables, title))
+        lines = list(_render_variables(variables, title
