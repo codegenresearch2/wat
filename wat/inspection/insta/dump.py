@@ -10,9 +10,8 @@ def dump_snippet(filename: str) -> str:
     text: str = Path(filename).read_text()
     lines: List[str] = text.splitlines()
     lines = [line for line in lines if line.strip()]  # remove empty lines
-    comment_pattern = re.compile(r'  # (.+)$')
-    lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
-    minified_text = '\n'.join([minify_code(line) for line in lines])
+    minified_lines = [minify_code(line) for line in lines]  # apply minification to each line
+    minified_text = '\n'.join(minified_lines)  # join the minified lines
 
     # Write the minified text to a file with the correct path
     Path('.inspection_minified.py').write_text(minified_text)
@@ -25,32 +24,42 @@ def minify_code(text: str) -> str:
     """
     Minifies the given Python code by removing comments and unnecessary whitespace.
     """
+    # Remove comments
+    text = re.sub(r'  # .+$', '', text)
+    
+    # Remove type hints
     text = re.sub(r'\) -> \'Wat\':$', '):', text)
     text = re.sub(r'\) -> Union\[.+\]:$', '):', text)
-    if "'" not in text and '"' not in text:
-        text = text.replace(': bool = ', '=')
-        text = text.replace(': int = ', '=')
-        text = text.replace(': List[str] = ', '=')
-        text = text.replace(': str, ', ',')
-        text = text.replace(': Any,', ',')
-        text = text.replace(': bool)', ')')
-        text = text.replace(': int)', ')')
-        text = text.replace(': InspectAttribute', '')
-        text = text.replace(': InspectConfig', '')
-        text = re.sub(r'\) -> str:$', '):', text)
-        text = re.sub(r'\) -> bool:$', '):', text)
-        text = re.sub(r'\) -> Optional\[.+\]:$', '):', text)
-        text = re.sub(r'\) -> Dict\[.+\]:$', '):', text)
-        text = re.sub(r'\) -> Iterable\[.+\]:$', '):', text)
-        text = re.sub(r': Dict(\[.+\])?', '', text)
-        text = re.sub(r': List(\[.+\])?', '', text)
-        text = text.replace(': Type)', ')')
-        text = text.replace('from typing import Any, Dict, List, Optional, Type, Iterable, Union', 'from typing import Any, Optional, Type')
+    text = re.sub(r'\) -> str:$', '):', text)
+    text = re.sub(r'\) -> bool:$', '):', text)
+    text = re.sub(r'\) -> Optional\[.+\]:$', '):', text)
+    text = re.sub(r'\) -> Dict\[.+\]:$', '):', text)
+    text = re.sub(r'\) -> Iterable\[.+\]:$', '):', text)
+    text = re.sub(r': Dict(\[.+\])?', '', text)
+    text = re.sub(r': List(\[.+\])?', '', text)
+    text = re.sub(r': Type)', ')')
+    
+    # Remove unnecessary spaces
+    text = text.replace(': bool = ', '=')
+    text = text.replace(': int = ', '=')
+    text = text.replace(': List[str] = ', '=')
+    text = text.replace(': str, ', ',')
+    text = text.replace(': Any,', ',')
+    text = text.replace(': bool)', ')')
+    text = text.replace(': int)', ')')
+    text = text.replace(': InspectAttribute', '')
+    text = text.replace(': InspectConfig', '')
+    text = text.replace('from typing import Any, Dict, List, Optional, Type, Iterable, Union', 'from typing import Any, Optional, Type')
+    
+    # Remove final type hint if present
     if not text.endswith(': str'):
         text = text.replace(': str', '')
+    
+    # Replace ' = ' if not in quotes
     if text.count(' = ') == 1:
         if not _is_in_quote(text, ' = '):
             text = text.replace(' = ', '=')
+    
     return text
 
 
