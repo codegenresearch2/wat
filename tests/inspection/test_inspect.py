@@ -95,18 +95,18 @@ type: test_inspect.Hero
 Public attributes:
   a: str = 'batman'
 
-  def shout\(loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
 ''')
                            
     output = inspect_format(Hero)
     assert_multiline_match(output, r'''
 value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
-signature: class Hero\(name: str\)
+signature: class Hero(name: str)
 """A hero"""
 
 Public attributes:
-  def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout(self, loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
 ''')
 
 def test_inspect_function():
@@ -122,7 +122,7 @@ def test_inspect_function():
     assert_multiline_match(output, r'''
 value: <function test_inspect_function.<locals>.foo at .*>
 type: function
-signature: def foo\(a: int, b: str = 'bar'\) -> str
+signature: def foo(a: int, b: str = 'bar') -> str
 """
 Do something
 dumb
@@ -145,14 +145,14 @@ def test_inspect_nested_dict():
 value: {
     'a': {
         'b': {
-            'values': \[
+            'values': [
                 2,
                 5,
                 3,
-            \],
+            ],
         },
         'empty_dict': {},
-        'empty_list': \[\],
+        'empty_list': [],
         40: None,
         None: 42,
     },
@@ -201,7 +201,7 @@ def test_inspect_async_def():
     assert_multiline_match(output, r'''
 value: <function test_inspect_async_def.<locals>.looper at .*>
 type: function
-signature: async def looper\(\)
+signature: async def looper()
 ''')
 
 def test_wat_with_nothing():
