@@ -156,19 +156,19 @@ def _get_doc(obj, long: bool) -> Optional[str]:
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
-        return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}(…)'
+        return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}(…)'
     if attr.doc:
         if attr.doc.count('\n') == 0:
-            return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}  # {attr.doc}'
+            return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}  # {attr.doc}'
         else:
-            return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}:\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
+            return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}:\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
     else:
-        return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}'
+        return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}'
 
 
 def _format_short_value(value, long: bool) -> str:
