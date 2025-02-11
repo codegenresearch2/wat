@@ -47,7 +47,7 @@ def inspect_format(
         output.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
         output.append(STYLE_BLUE + '─' * terminal_width + RESET)
 
-    text = '\n'.join(line for line in output if line is not None)
+    text = '\n'.join(output)
     if not _color_enabled():
         text = _strip_color(text)
     return text
