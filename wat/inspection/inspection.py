@@ -1,8 +1,9 @@
-from typing import List, Optional, Iterable, Type
+from typing import List, Optional, Iterable, Type, Any
 import inspect
 import os
 import re
 import sys
+from dataclasses import dataclass
 
 RESET = '\033[0m'
 STYLE_BRIGHT = '\033[1m'
@@ -18,25 +19,25 @@ STYLE_MAGENTA = '\033[0;35m'
 STYLE_CYAN = '\033[0;36m'
 STYLE_GRAY = '\033[2;37m'
 
+@dataclass
 class InspectConfig:
-    def __init__(self, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, caller: bool = False):
-        self.short = short
-        self.dunder = dunder
-        self.nodocs = nodocs
-        self.long = long
-        self.code = code
-        self.caller = caller
+    short: bool = False
+    dunder: bool = False
+    nodocs: bool = False
+    long: bool = False
+    code: bool = False
+    caller: bool = False
 
+@dataclass
 class InspectAttribute:
-    def __init__(self, name: str, value: Any, type_: Type, callable: bool, dunder: bool, private: bool, signature: Optional[str] = None, doc: Optional[str] = None):
-        self.name = name
-        self.value = value
-        self.type = type_
-        self.callable = callable
-        self.dunder = dunder
-        self.private = private
-        self.signature = signature
-        self.doc = doc
+    name: str
+    value: Any
+    type_: Type
+    callable: bool
+    dunder: bool
+    private: bool
+    signature: Optional[str] = None
+    doc: Optional[str] = None
 
 def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, all: bool = False, caller: bool = False) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller)
@@ -152,7 +153,7 @@ def _get_doc(obj, long: bool) -> str:
 
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type)
+    type_str = _format_type(attr.type_)
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute) -> str:
