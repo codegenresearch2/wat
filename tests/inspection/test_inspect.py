@@ -4,7 +4,7 @@ import re
 
 from pydantic import BaseModel
 
-import wat
+from wat import wat
 from wat.inspection.inspection import inspect_format
 from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
@@ -14,7 +14,7 @@ def test_inspect_primitive_var():
     assert strip_ansi_colors(output) == """
 value: None
 type: NoneType
-""".strip()
+"""
 
     output = inspect_format([5])
     assert strip_ansi_colors(output) == """
@@ -36,8 +36,8 @@ Public attributes:
   def remove(value, /) # Remove first occurrence of value.…
   def reverse() # Reverse *IN PLACE*.
   def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…
-""".strip()
-    
+"""
+
     output = inspect_format([5], dunder=True)
     assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output)
 
@@ -96,7 +96,7 @@ def test_inspect_function():
     output = inspect_format(foo)
     print(output)
     assert_multiline_match(output, r'''
-value: <function test_inspect_function\.<locals>\.foo at .*>
+value: <function test_inspect_function.<locals>.foo at .*>
 type: function
 signature: def foo\(a: int, b: str = 'bar'\) -> str
 """
