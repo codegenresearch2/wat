@@ -19,12 +19,15 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         replaced_contents.append(replaced_content)
 
     if old_code == new_code:
-        print('Insta-Load code is up to date')
+        print('Insta-Load code is already up to date')
         return
 
     for i, dst_filename in enumerate(dst_filenames):
         Path(dst_filename).write_text(replaced_contents[i])
         print(f'Code replaced in {dst_filename}')
+
+    char_count_change = len(new_code) - len(old_code)
+    print(f'Character count change: {"+" if char_count_change >= 0 else ""}{char_count_change}')
 
 
 if __name__ == '__main__':
