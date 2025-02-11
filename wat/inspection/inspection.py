@@ -1,29 +1,27 @@
 import sys
-from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Type, Iterable, Union
-import inspect
 import os
-import re
+import inspect
+from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
-@dataclass
 class InspectConfig:
-    short: bool
-    dunder: bool
-    nodocs: bool
-    long: bool
-    code: bool
-    caller: bool
+    def __init__(self, short: bool, dunder: bool, nodocs: bool, long: bool, code: bool, caller: bool):
+        self.short = short
+        self.dunder = dunder
+        self.nodocs = nodocs
+        self.long = long
+        self.code = code
+        self.caller = caller
 
-@dataclass
 class InspectAttribute:
-    name: str
-    value: Any
-    type: Type
-    callable: bool
-    dunder: bool
-    private: bool
-    signature: Optional[str]
-    doc: Optional[str]
+    def __init__(self, name: str, value: Any, type_: Type, callable_: bool, dunder: bool, private: bool, signature: Optional[str], doc: Optional[str]):
+        self.name = name
+        self.value = value
+        self.type = type_
+        self.callable = callable_
+        self.dunder = dunder
+        self.private = private
+        self.signature = signature
+        self.doc = doc
 
 RESET = '\033[0m'
 STYLE_BAR = '\033[0;34m'  # blue
@@ -139,7 +137,7 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
         signature = _get_callable_signature(key, value) if _callable else None
         doc = _get_doc(value, long=config.long) if _callable else None
         yield InspectAttribute(
-            name=key, value=value, type=type(value), callable=_callable, dunder=dunder,
+            name=key, value=value, type_=type(value), callable_=_callable, dunder=dunder,
             private=private, signature=signature, doc=doc,
         )
 
@@ -417,11 +415,4 @@ Call {STYLE_CODE}wat.globals{RESET} to inspect global variables.'''
         }.get(os.environ.get('WAT_COLOR', '').lower())
         if env_color is not None:
             return env_color
-        return sys.stdout.isatty()
-
-    def _print_variables(self, variables: Dict[str, Any], title: str) -> Optional[str]:
-        lines = list(_render_variables(variables, title))
-        output = '\n'.join(line for line in lines if line is not None)
-        return self._display_output(output)
-
-    def __trued
+        return
