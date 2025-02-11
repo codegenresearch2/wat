@@ -12,6 +12,18 @@ class InspectConfig:
     nodocs: bool
     long: bool
     code: bool
+    caller: bool
+
+@dataclass
+class InspectAttribute:
+    name: str
+    value: Any
+    type: Type
+    callable: bool
+    dunder: bool
+    private: bool
+    signature: Optional[str]
+    doc: Optional[str]
 
 RESET = '\033[0m'
 STYLE_BRIGHT = '\033[1m'
@@ -36,8 +48,9 @@ def inspect_format(
     long: bool = False,
     code: bool = False,
     all: bool = False,
+    caller: bool = False,
 ) -> str:
-    config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
+    config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller)
     output: List[str] = list(_produce_inspect_lines(obj, config))
 
     if sys.stdout.isatty() and _color_enabled():  # horizontal bar
@@ -410,10 +423,3 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
         elif name == 'code':
             new_wat._inspect_kwargs['code'] = True
         elif name == 'nodocs':
-            new_wat._inspect_kwargs['nodocs'] = True
-        elif name == 'all':
-            new_wat._inspect_kwargs['all'] = True
-        elif name == 'ret':
-            new_wat._config['ret'] = True
-        elif name == 'str':
-            new_wat._config['str'] = True
