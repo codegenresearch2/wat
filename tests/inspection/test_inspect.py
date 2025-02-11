@@ -37,10 +37,7 @@ def main():
 
 def test_inspect_primitive_var():
     output = inspect_format(None)
-    assert strip_ansi_colors(output) == """
-value: None
-type: NoneType
-"""
+    assert strip_ansi_colors(output) == "\nvalue: None\ntype: NoneType"
 
     output = inspect_format([5])
     assert strip_ansi_colors(output) == """
