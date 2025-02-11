@@ -1,1 +1,13 @@
-__version__ = "0.2.0"  # should be in sync with pyproject.toml
+__version__ = "0.1.2"  # should be in sync with pyproject.toml
+
+from setuptools import setup
+
+setup(
+    name="your_package_name",
+    version=__version__,
+    packages=["your_package_name"],
+    install_requires=[
+        # List your dependencies here
+    ],
+    # Other setup parameters
+)
