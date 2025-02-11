@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import wat
-import datetime
-
+import math
 
 if __name__ == '__main__':
-    wat.caller / datetime.datetime.now()
+    result = wat.caller / math.sqrt(2 + 2)
+    print(result)
