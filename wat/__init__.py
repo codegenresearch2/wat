@@ -7,6 +7,5 @@ __all__ = [
     '__version__'
 ]
 
-wat.__version__ = __version__
-
 sys.modules[__name__] = wat
+wat.__version__ = __version__
