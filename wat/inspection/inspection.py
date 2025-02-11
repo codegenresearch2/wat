@@ -55,7 +55,7 @@ def inspect_format(
 
 def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
-    repr_value = repr(obj)
+    repr_value: str = repr(obj)
     if repr_value == str_value or repr_value == _strip_color(str_value):
         yield f'{STYLE_BRIGHT_BLUE}value:{RESET} {str_value}'
     else:
