@@ -1,3 +1,30 @@
+from dataclasses import dataclass
+import inspect
+import os
+import re
+import sys
+from typing import Any, Dict, List, Optional, Type, Iterable
+
+@dataclass
+class InspectConfig:
+    short: bool
+    dunder: bool
+    nodocs: bool
+    long: bool
+    code: bool
+    caller: bool
+
+@dataclass
+class InspectAttribute:
+    name: str
+    value: Any
+    type: Type
+    callable: bool
+    dunder: bool
+    private: bool
+    signature: Optional[str]
+    doc: Optional[str]
+
 class Style:
     RESET = '\033[0m'
     STYLE_BAR = '\033[0;34m'  # blue
@@ -368,12 +395,3 @@ Call {STYLE_CODE}wat.globals{RESET} to inspect global variables.'''
 
     def _print_variables(self, variables: Dict[str, Any], title: str) -> Optional[str]:
         lines = list(_render_variables(variables, title))
-        output = '\n'.join(line for line in lines if line is not None)
-        return self._display_output(output)
-
-    def __truediv__(self, other): return self.inspect(other)  # /
-    def __add__(self, other): return self.inspect(other)  # +
-    def __lshift__(self, other): return self.inspect(other)  # <<
-    def __rshift__(self, other): return self.inspect(other)  # >>
-    def __or__(self, other): return self.inspect(other)  # wat |
-    def __
