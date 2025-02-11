@@ -40,25 +40,15 @@ def minify_code(text: str) -> str:
     text = re.sub(r': Type)', ')')
     
     # Remove unnecessary spaces
-    text = text.replace(': bool = ', '=')
-    text = text.replace(': int = ', '=')
-    text = text.replace(': List[str] = ', '=')
-    text = text.replace(': str, ', ',')
-    text = text.replace(': Any,', ',')
-    text = text.replace(': bool)', ')')
-    text = text.replace(': int)', ')')
-    text = text.replace(': InspectAttribute', '')
-    text = text.replace(': InspectConfig', '')
-    text = text.replace('from typing import Any, Dict, List, Optional, Type, Iterable, Union', 'from typing import Any, Optional, Type')
+    text = re.sub(r'= ', '=', text)
+    text = re.sub(r', ', ',', text)
+    text = re.sub(r' \(', '(', text)
+    text = re.sub(r' \)', ')', text)
+    text = re.sub(r' :', ':', text)
     
     # Remove final type hint if present
     if not text.endswith(': str'):
-        text = text.replace(': str', '')
-    
-    # Replace ' = ' if not in quotes
-    if text.count(' = ') == 1:
-        if not _is_in_quote(text, ' = '):
-            text = text.replace(' = ', '=')
+        text = re.sub(r': str$', '', text)
     
     return text
 
@@ -67,15 +57,6 @@ def encode_text(text: str) -> str:
     compressed = zlib.compress(text.encode())
     b64: bytes = base64.b64encode(compressed)
     return b64.decode()
-
-
-def _is_in_quote(line: str, part: str) -> bool:
-    index = line.index(part)
-    before = line[:index]
-    after = line[index + len(part):]
-    before_quotes = before.count('"') + before.count("'")
-    after_quotes = after.count('"') + after.count("'")
-    return before_quotes % 2 == 1 and after_quotes % 2 == 1
 
 
 if __name__ == '__main__':
