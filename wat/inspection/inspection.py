@@ -160,7 +160,7 @@ def _render_attr_method(attr: InspectAttribute) -> str:
         if attr.doc.count('\n') == 0:
             return f'  {attr.signature}  # {attr.doc}'
         else:
-            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""'
+            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""\n'
     else:
         return f'  {attr.signature}'
 
