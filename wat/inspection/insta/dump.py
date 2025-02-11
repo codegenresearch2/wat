@@ -18,8 +18,8 @@ def dump_snippet(filename: str) -> str:
     # Minify the code
     minified_text = '\n'.join([minify_code(line) for line in lines])
     
-    # Write the minified text to a file
-    Path('wat/inspection/insta/.inspection_minified.py').write_text(minified_text)
+    # Write the minified text to a file in the current directory
+    Path('.inspection_minified.py').write_text(minified_text)
     
     # Encode the minified text
     code: str = encode_text(minified_text)
@@ -69,7 +69,7 @@ def encode_text(text: str) -> str:
     """
     Compress and encode the given text using base64.
     """
-    compressed = zlib.compress(text.encode(), 9)
+    compressed = zlib.compress(text.encode())
     b64: bytes = base64.b64encode(compressed)
     return b64.decode()
 
