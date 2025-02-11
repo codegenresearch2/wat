@@ -12,11 +12,10 @@ def dump_snippet(filename: str) -> str:
     lines = [line for line in lines if line.strip()]  # remove empty lines
     comment_pattern = re.compile(r'  # (.+)$')
     lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
-    lines = [minify_code(line) for line in lines]
-    minified_text = '\n'.join(lines)
+    minified_text = '\n'.join([minify_code(line) for line in lines])
 
-    # Write the minified text to a file
-    Path('wat/inspection/insta/.inspection_minified.py').write_text(minified_text)
+    # Write the minified text to a file with the correct path
+    Path('.inspection_minified.py').write_text(minified_text)
 
     code: str = encode_text(minified_text)
     return code
@@ -24,7 +23,7 @@ def dump_snippet(filename: str) -> str:
 
 def minify_code(text: str) -> str:
     """
-    Minifies the given Python code by removing comments, type hints, and unnecessary whitespace.
+    Minifies the given Python code by removing comments and unnecessary whitespace.
     """
     text = re.sub(r'\) -> \'Wat\':$', '):', text)
     text = re.sub(r'\) -> Union\[.+\]:$', '):', text)
