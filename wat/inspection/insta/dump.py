@@ -6,7 +6,7 @@ import zlib
 from typing import List
 
 
-def get_snippet(filename: str) -> str:
+def dump_snippet(filename: str) -> str:
     text: str = Path(filename).read_text()
     lines: List[str] = text.splitlines()
     lines = [line for line in lines if line.strip()]  # remove empty lines
@@ -14,7 +14,9 @@ def get_snippet(filename: str) -> str:
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
 
-    code: str = compress_and_encode(text)
+    Path('wat/inspection/insta/.inspection_minified.py').write_text(text)
+
+    code: str = encode_text(text)
     return code
 
 
@@ -55,7 +57,7 @@ def minify_code(text: str) -> str:
     return text
 
 
-def compress_and_encode(text: str) -> str:
+def encode_text(text: str) -> str:
     compressed = zlib.compress(text.encode(), 9)
     b64: bytes = base64.b64encode(compressed)
     return b64.decode()
@@ -71,4 +73,4 @@ def _is_in_quote(line: str, part: str) -> bool:
 
 
 if __name__ == '__main__':
-    print(get_snippet(sys.argv[1]))
+    print(dump_snippet(sys.argv[1]))
