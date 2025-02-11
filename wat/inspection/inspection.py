@@ -39,9 +39,13 @@ def inspect_format(
 ) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
     output_lines = list(_produce_inspect_lines(obj, config))
-    terminal_width = os.get_terminal_size().columns
-    output_lines.insert(0, STYLE_BRIGHT_BLUE + '─' * terminal_width + RESET)
-    output_lines.append(STYLE_BRIGHT_BLUE + '─' * terminal_width + RESET)
+    try:
+        terminal_width = os.get_terminal_size().columns
+    except OSError:
+        terminal_width = 80
+    if sys.stdout.isatty() and _color_enabled():
+        output_lines.insert(0, STYLE_BRIGHT_BLUE + '─' * terminal_width + RESET)
+        output_lines.append(STYLE_BRIGHT_BLUE + '─' * terminal_width + RESET)
     return '\n'.join(output_lines)
 
 
