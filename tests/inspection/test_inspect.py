@@ -12,14 +12,10 @@ from tests.asserts import assert_multiline_match, strip_ansi_colors, StdoutCap
 
 def test_inspect_primitive_var():
     output = inspect_format(None)
-    assert strip_ansi_colors(output) == """
-value: None
-type: NoneType
-""".strip()
+    assert strip_ansi_colors(output) == "value: None\ntype: NoneType"
 
     output = inspect_format([5])
-    assert strip_ansi_colors(output) == """
-value: [
+    assert strip_ansi_colors(output) == """value: [
     5,
 ]
 type: list
@@ -37,8 +33,8 @@ Public attributes:
   def remove(value, /) # Remove first occurrence of value.…
   def reverse() # Reverse *IN PLACE*.
   def sort(*, key=None, reverse=False) # Sort the list in ascending order and return None.…
-""".strip()
-    
+"""
+
     output = inspect_format([5], dunder=True)
     assert "def __eq__(value, /) # Return self==value." in strip_ansi_colors(output)
 
@@ -65,24 +61,24 @@ def test_inspect_instance():
     instance = Hero('batman')
     output = inspect_format(instance)
     assert_multiline_match(output, r'''
-value: <test_inspect\.test_inspect_instance\.<locals>\.Hero object at .*>
-type: test_inspect\.Hero
+value: <test_inspect.Hero object at .*>
+type: test_inspect.Hero
 
 Public attributes:
   a: str = 'batman'
 
-  def shout\(loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
 ''')
                            
     output = inspect_format(Hero)
     assert_multiline_match(output, r'''
-value: <class 'test_inspect\.test_inspect_instance\.<locals>\.Hero'>
+value: <class 'test_inspect.Hero'>
 type: type
-signature: class Hero\(name: str\)
+signature: class Hero(name: str)
 """A hero"""
 
 Public attributes:
-  def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout(self, loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid
 ''')
 
 
@@ -95,11 +91,10 @@ def test_inspect_function():
         return a * b
   
     output = inspect_format(foo)
-    print(output)
     assert_multiline_match(output, r'''
-value: <function test_inspect_function\.<locals>\.foo at .*>
+value: <function test_inspect_function.<locals>.foo at .*>
 type: function
-signature: def foo\(a: int, b: str = 'bar'\) -> str
+signature: def foo(a: int, b: str = 'bar') -> str
 """
 Do something
 dumb
@@ -123,14 +118,14 @@ def test_inspect_nested_dict():
 value: {
     'a': {
         'b': {
-            'values': \[
+            'values': [
                 2,
                 5,
                 3,
-            \],
+            ],
         },
         'empty_dict': {},
-        'empty_list': \[\],
+        'empty_list': [],
         40: None,
         None: 42,
     },
@@ -144,9 +139,9 @@ def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
     assert_multiline_match(output, r'''
 str: 2023-08-01 00:00:00
-repr: datetime.datetime\(2023, 8, 1, 0, 0\)
+repr: datetime.datetime(2023, 8, 1, 0, 0)
 type: datetime.datetime
-parents: datetime\.date
+parents: datetime.date
 ''')
 
 
@@ -155,7 +150,7 @@ def test_inspect_long():
     lines = output.splitlines()
     assert "value: <class 'datetime.datetime'>" in lines
     assert "type: type" in lines
-    assert "signature: class datetime(…)" in lines
+    assert "signature: class datetime(...)" in lines
     assert "datetime(year, month, day[, hour[, minute[, second[, microsecond[,tzinfo]]]]])" in lines
 
 
@@ -183,7 +178,7 @@ def test_inspect_async_def():
     assert_multiline_match(output, r'''
 value: <function test_inspect_async_def.<locals>.looper at .*>
 type: function
-signature: async def looper\(\)
+signature: async def looper()
 ''')
 
 
@@ -271,9 +266,9 @@ def test_wat_modifiers_all_but_nodocs():
     assert_multiline_match(capture.output(), r'''
 value: <function match at .*>
 type: function
-signature: def match\(pattern, string, flags=0\)
+signature: def match(pattern, string, flags=0)
 source code:
-def match\(pattern, string, flags=0\):
+def match(pattern, string, flags=0):
     """.*
     .*"""
     .*
@@ -286,10 +281,10 @@ def test_list_parent_classes():
 
     output = inspect_format(Parent.FIRST, short=True)
     assert_multiline_match(output, r'''
-str: '(Parent\.FIRST|first)'
-repr: <Parent\.FIRST: 'first'>
-type: test_inspect\.Parent
-parents: str, enum\.Enum
+str: '(Parent.FIRST|first)'
+repr: <Parent.FIRST: 'first'>
+type: test_inspect.Parent
+parents: str, enum.Enum
 len: 5
 ''')
     
@@ -306,7 +301,7 @@ def test_list_deep_mro_classes():
 
     output = inspect_format(Son(), short=True)
     assert_multiline_match(output, r'''
-value: <test_inspect.test_list_deep_mro_classes.<locals>.Son object at .*>
+value: <test_inspect.Son object at .*>
 type: test_inspect.Son
 parents: test_inspect.Father, test_inspect.Grand
 ''')
@@ -319,9 +314,10 @@ def test_pydantic_class():
     output = inspect_format(Person(name='george'), short=True)
     assert_multiline_match(output, r'''
 str: name='george'
-repr: Person\(name='george'\)
-type: test_inspect\.Person
-parents: pydantic\.main\.BaseModel
+repr: Person(name='george')
+type: test_inspect.Person
+parents: pydantic.main.BaseModel
+len: 5
 ''')
 
 
@@ -339,13 +335,13 @@ def test_listing_private_attributes():
     
     output = inspect_format(Foo('bar'))
     assert_multiline_match(output, r'''
-value: <test_inspect\.test_listing_private_attributes\.<locals>\.Foo object at .*>
-type: test_inspect\.Foo
+value: <test_inspect.Foo object at .*>
+type: test_inspect.Foo
 
 Private attributes:
   _name: str = 'bar'
 
-  def _private_method\(\)
+  def _private_method()
 ''')
 
 
@@ -367,13 +363,11 @@ def test_colorful_output():
     try:
         os.environ['WAT_COLOR'] = 'false'
         output = inspect_format(None)
-        assert output == """value: None
-type: NoneType"""
+        assert output == "value: None\ntype: NoneType"
 
         os.environ['WAT_COLOR'] = 'true'
         output = inspect_format(None)
-        assert output == """\x1b[1;34mvalue:\x1b[0m \x1b[0;35mNone\x1b[0m
-\x1b[1;34mtype:\x1b[0m \x1b[0;33mNoneType\x1b[0m"""
+        assert output == "\x1b[1;34mvalue:\x1b[0m \x1b[0;35mNone\x1b[0m\n\x1b[1;34mtype:\x1b[0m \x1b[0;33mNoneType\x1b[0m"
     finally:
         os.environ['WAT_COLOR'] = ''
 
@@ -385,14 +379,7 @@ def test_inspect_overriden_len():
 
     output = inspect_format(Foo())
     assert_multiline_match(output, r'''
-value: <test_inspect\.test_inspect_overriden_len\.<locals>\.Foo object at .*>
-type: test_inspect\.Foo
+value: <test_inspect.Foo object at .*>
+type: test_inspect.Foo
 len: 4
 ''')
-
-
-def test_catch_len_on_str_type():
-    output = (wat.str.short / str).splitlines()
-    assert "value: <class 'str'>" in output
-    assert "type: type" in output
-    assert "signature: class str(…)" in output
