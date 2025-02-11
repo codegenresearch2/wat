@@ -53,39 +53,40 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
     repr_value: str = repr(obj)
     if repr_value == str(obj) or repr_value == _strip_color(str_value):
-        yield f'value: {str_value}'
+        yield f'{STYLE_BRIGHT_BLUE}value:{RESET} {str_value}'
     else:
-        yield f'str: {str_value}'
-        yield f'repr: {repr_value}'
+        yield f'{STYLE_BRIGHT_BLUE}str:{RESET} {str_value}'
+        yield f'{STYLE_BRIGHT_BLUE}repr:{RESET} {repr_value}'
 
     str_type = _format_type(type(obj))
-    yield f'type: {str_type}'
+    yield f'{STYLE_BRIGHT_BLUE}type:{RESET} {str_type}'
     parents = ', '.join(_get_parent_types(type(obj)))
     if parents:
-        yield f'parents: {parents}'
+        yield f'{STYLE_BRIGHT_BLUE}parents:{RESET} {parents}'
 
     if callable(getattr(obj, '__len__', None)):
         try:
-            yield f'len: {_format_value(len(obj))}'
+            yield f'{STYLE_BRIGHT_BLUE}len:{RESET} {_format_value(len(obj))}'
         except TypeError:
             pass
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj) if callable(obj) else None
-        yield f'signature: {signature}'
+        if signature:
+            yield f'{STYLE_BRIGHT_BLUE}signature:{RESET} {signature}'
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
         if doc.count('\n') == 0:
-            yield f'"""{doc}"""{RESET}'
+            yield f'{STYLE_GRAY}"""{doc}"""{RESET}'
         else:
-            yield f'"""{doc}"""{RESET}'
+            yield f'{STYLE_GRAY}"""{doc}"""{RESET}'
 
     if config.code and (inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
-            yield f'source code:{RESET}\n{source}'
+            yield f'{STYLE_BRIGHT_BLUE}source code:{RESET}\n{source}'
 
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
@@ -155,19 +156,19 @@ def _get_doc(obj, long: bool) -> Optional[str]:
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
+    return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
-        return f'  {attr.name}(…)'
+        return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}(…)'
     if attr.doc:
         if attr.doc.count('\n') == 0:
-            return f'  {attr.signature}  # {attr.doc}'
+            return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}  # {attr.doc}'
         else:
-            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""'
+            return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}:\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
     else:
-        return f'  {attr.signature}'
+        return f'{STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}{attr.signature}'
 
 
 def _format_short_value(value, long: bool) -> str:
