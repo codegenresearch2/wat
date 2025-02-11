@@ -1,46 +1,56 @@
-from dataclasses import dataclass
+from typing import List, Optional, Iterable, Type
 import inspect
 import os
 import re
 import sys
-from typing import Any, Iterable, Type, Union
 
+RESET = '\033[0m'
+STYLE_BRIGHT = '\033[1m'
+STYLE_RED = '\033[0;31m'
+STYLE_BRIGHT_RED = '\033[1;31m'
+STYLE_GREEN = '\033[0;32m'
+STYLE_BRIGHT_GREEN = '\033[1;32m'
+STYLE_YELLOW = '\033[0;33m'
+STYLE_BRIGHT_YELLOW = '\033[1;33m'
+STYLE_BLUE = '\033[0;34m'
+STYLE_BRIGHT_BLUE = '\033[1;34m'
+STYLE_MAGENTA = '\033[0;35m'
+STYLE_CYAN = '\033[0;36m'
+STYLE_GRAY = '\033[2;37m'
 
-@dataclass
 class InspectConfig:
-    short: bool
-    dunder: bool
-    nodocs: bool
-    long: bool
-    code: bool
+    def __init__(self, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, caller: bool = False):
+        self.short = short
+        self.dunder = dunder
+        self.nodocs = nodocs
+        self.long = long
+        self.code = code
+        self.caller = caller
 
-
-@dataclass
 class InspectAttribute:
-    name: str
-    value: Any
-    type: Type
-    callable: bool
-    dunder: bool
-    private: bool
-    signature: str
-    doc: str
+    def __init__(self, name: str, value: Any, type_: Type, callable: bool, dunder: bool, private: bool, signature: Optional[str] = None, doc: Optional[str] = None):
+        self.name = name
+        self.value = value
+        self.type = type_
+        self.callable = callable
+        self.dunder = dunder
+        self.private = private
+        self.signature = signature
+        self.doc = doc
 
-
-def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, all: bool = False) -> str:
-    config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all)
+def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, all: bool = False, caller: bool = False) -> str:
+    config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller)
     output = list(_produce_inspect_lines(obj, config))
 
     if sys.stdout.isatty() and _color_enabled():
         terminal_width = os.get_terminal_size().columns
-        output.insert(0, '─' * terminal_width)
-        output.append('─' * terminal_width)
+        output.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
+        output.append(STYLE_BLUE + '─' * terminal_width + RESET)
 
     text = '\n'.join(line for line in output if line is not None)
     if not _color_enabled():
         text = _strip_color(text)
     return text
-
 
 def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
@@ -71,7 +81,7 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
         if doc.count('\n') == 0:
-            yield f'"""{doc}"""'
+            yield f'"""{doc}"""{RESET}'
         else:
             yield from ['"""', doc, '"""']
 
@@ -83,7 +93,6 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         yield from _render_attrs_section(attributes, config)
-
 
 def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
     for key in dir(obj):
@@ -101,14 +110,13 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
         yield InspectAttribute(
             name=key,
             value=value,
-            type=type(value),
+            type_=type(value),
             callable=_callable,
             dunder=dunder,
             private=private,
             signature=signature,
             doc=doc,
         )
-
 
 def _get_callable_signature(name: str, obj) -> str:
     try:
@@ -126,13 +134,11 @@ def _get_callable_signature(name: str, obj) -> str:
         prefix = ''
     return f'{prefix}{name}{signature}'
 
-
 def _get_source_code(obj) -> str:
     try:
         return inspect.getsource(obj)
     except (OSError, TypeError, IndentationError) as e:
         return f'failed to get source code: {type(e)}: {e}'
-
 
 def _get_doc(obj, long: bool) -> str:
     doc = inspect.getdoc(obj)
@@ -144,12 +150,10 @@ def _get_doc(obj, long: bool) -> str:
     else:
         return _shorten_string(doc)
 
-
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
-    return f'  {attr.name}: {type_str} = {value_str}'
-
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
@@ -158,17 +162,15 @@ def _render_attr_method(attr: InspectAttribute) -> str:
         if attr.doc.count('\n') == 0:
             return f'  {attr.signature}  # {attr.doc}'
         else:
-            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""'
+            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""{RESET}'
     else:
         return f'  {attr.signature}'
-
 
 def _format_short_value(value, long: bool) -> str:
     value_str = _format_value(value)
     if long:
         return value_str
     return _shorten_string(value_str)
-
 
 def _format_value(value, indent: int = 0) -> str:
     if isinstance(value, str):
@@ -191,7 +193,6 @@ def _format_value(value, indent: int = 0) -> str:
         return f'<{angle_bracket_match.group(1)}>'
     return str_val
 
-
 def _format_dict_value(dic: dict, indent: int) -> str:
     if indent > 30:
         return 'ERROR: too deeply nested'
@@ -208,7 +209,6 @@ def _format_dict_value(dic: dict, indent: int) -> str:
     else:
         return '{}'
 
-
 def _format_list_value(lst: list, indent: int) -> str:
     lines = []
     for value in lst:
@@ -221,13 +221,11 @@ def _format_list_value(lst: list, indent: int) -> str:
     else:
         return '[]'
 
-
 def _format_type(type_: Type) -> str:
     module = type_.__module__
     if module is None or module == str.__class__.__module__:
         return type_.__name__
     return f'{module}.{type_.__name__}'
-
 
 def _get_parent_types(type_: Type) -> Iterable[str]:
     if hasattr(type_, '__mro__'):
@@ -235,7 +233,6 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
             if index == 0 or base_type is object:
                 continue
             yield _format_type(base_type)
-
 
 def _shorten_string(text: str) -> str:
     first_line, _, rest = text.partition('\n')
@@ -245,8 +242,7 @@ def _shorten_string(text: str) -> str:
         first_line = first_line[:100] + '…'
     return first_line
 
-
-def _render_attrs_section(attributes: list[InspectAttribute], config: InspectConfig) -> Iterable[str]:
+def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
     public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
     private_vars = [a for a in attributes if a.private and not a.callable]
     dunder_vars = [a for a in attributes if a.dunder and not a.callable]
@@ -256,7 +252,7 @@ def _render_attrs_section(attributes: list[InspectAttribute], config: InspectCon
 
     if public_vars or public_methods:
         yield ''
-        yield 'Public attributes:'
+        yield f'{STYLE_BRIGHT}Public attributes:{RESET}'
         for attr in public_vars:
             yield _render_attr_variable(attr, config)
         if public_vars and public_methods:
@@ -266,7 +262,7 @@ def _render_attrs_section(attributes: list[InspectAttribute], config: InspectCon
     
     if private_vars or private_methods:
         yield ''
-        yield 'Private attributes:'
+        yield f'{STYLE_BRIGHT}Private attributes:{RESET}'
         for attr in private_vars:
             yield _render_attr_variable(attr, config)
         if private_vars and private_methods:
@@ -276,14 +272,13 @@ def _render_attrs_section(attributes: list[InspectAttribute], config: InspectCon
 
     if config.dunder and (dunder_vars or dunder_methods):
         yield ''
-        yield 'Dunder attributes:'
+        yield f'{STYLE_BRIGHT}Dunder attributes:{RESET}'
         for attr in dunder_vars:
             yield _render_attr_variable(attr, config)
         if dunder_vars and dunder_methods:
             yield ''
         for attr in dunder_methods:
             yield _render_attr_method(attr)
-
 
 def _list_local_variables() -> dict:
     frame = inspect.currentframe()
@@ -295,7 +290,6 @@ def _list_local_variables() -> dict:
     finally:
         del frame
 
-
 def _list_global_variables() -> dict:
     frame = inspect.currentframe()
     try:
@@ -306,7 +300,6 @@ def _list_global_variables() -> dict:
     finally:
         del frame
 
-
 def _render_variables(variables: dict, title: str) -> Iterable[str]:
     yield f'{title}:'
     for name in sorted(variables.keys()):
@@ -314,7 +307,6 @@ def _render_variables(variables: dict, title: str) -> Iterable[str]:
         value_str = _format_short_value(value, long=False)
         type_str = _format_type(type(value))
         yield f'  {name}: {type_str} = {value_str}'
-
 
 def _color_enabled() -> bool:
     env_color = {
@@ -325,10 +317,8 @@ def _color_enabled() -> bool:
         return env_color
     return sys.stdout.isatty()
 
-
 def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
-
 
 class Wat:
     def __init__(self, **inspect_kwargs):
@@ -345,18 +335,18 @@ class Wat:
         return '<WAT Inspector object>'
     
     def _print_help(self):
-        text = f'''Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:
-  .short or .s to hide attributes (variables and methods)
-  .dunder to print dunder attributes
-  .code to print source code of a function, method or class
-  .long to print non-abbreviated values and documentation
-  .nodocs to hide documentation for functions and classes
-  .all to include all information
-  .ret to return the inspected object
-  .str to return the output string instead of printing
-  .gray to disable colorful output in the console
-Call wat.locals or wat() to inspect local variables.
-Call wat.globals to inspect global variables.'''
+        text = f'''Try {STYLE_YELLOW}wat / object{RESET} or {STYLE_YELLOW}wat.modifiers / object{RESET} to inspect an {STYLE_YELLOW}object{RESET}. {STYLE_BRIGHT}Modifiers{RESET} are:
+  {STYLE_GREEN}.short{RESET} or {STYLE_GREEN}.s{RESET} to hide attributes (variables and methods)
+  {STYLE_GREEN}.dunder{RESET} to print dunder attributes
+  {STYLE_GREEN}.code{RESET} to print source code of a function, method or class
+  {STYLE_GREEN}.long{RESET} to print non-abbreviated values and documentation
+  {STYLE_GREEN}.nodocs{RESET} to hide documentation for functions and classes
+  {STYLE_GREEN}.all{RESET} to include all information
+  {STYLE_GREEN}.ret{RESET} to return the inspected {STYLE_YELLOW}object{RESET}
+  {STYLE_GREEN}.str{RESET} to return the output string instead of printing
+  {STYLE_GREEN}.gray{RESET} to disable colorful output in the console
+Call {STYLE_YELLOW}wat.locals{RESET} or {STYLE_YELLOW}wat(){RESET} to inspect local variables.
+Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
         if not _color_enabled():
             text = _strip_color(text)
         print(text)
@@ -439,8 +429,5 @@ Call wat.globals to inspect global variables.'''
         else:
             raise AttributeError
         return new_wat
-
-
-RESET = '\033[0m'
 
 wat = Wat()
