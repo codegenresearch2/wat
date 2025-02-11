@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import sys
 import zlib
-from typing import List, Any, Dict, Optional, Type, Iterable
+from typing import List
 
 
 def dump_snippet(filename: str) -> str:
@@ -28,39 +28,12 @@ def dump_snippet(filename: str) -> str:
 
 def minify_code(text: str) -> str:
     """
-    Minify the given code by removing comments, type hints, and unnecessary spaces.
+    Minify the given code by removing comments and unnecessary spaces.
     """
     # Remove type hints and spaces
-    text = re.sub(r'\) -> \'Wat\':$', '):', text)
-    text = re.sub(r'\) -> Union\[.+\]:$', '):', text)
-    text = re.sub(r'\) -> str:$', '):', text)
-    text = re.sub(r'\) -> bool:$', '):', text)
-    text = re.sub(r'\) -> Optional\[.+\]:$', '):', text)
-    text = re.sub(r'\) -> Dict\[.+\]:$', '):', text)
-    text = re.sub(r'\) -> Iterable\[.+\]:$', '):', text)
-    text = re.sub(r': Dict(\[.+\])?', '', text)
-    text = re.sub(r': List(\[.+\])?', '', text)
-    text = re.sub(r': Type)', ')')
-    text = re.sub(r': Any,', ',')
-    
-    # Replace type assignments with direct assignments
-    if ': bool = ' in text:
-        text = text.replace(': bool = ', '=')
-    if ': int = ' in text:
-        text = text.replace(': int = ', '=')
-    if ': List[str] = ' in text:
-        text = text.replace(': List[str] = ', '=')
-    if ': str, ' in text:
-        text = text.replace(': str, ', ',')
-    
-    # Remove unnecessary spaces around operators and assignments
-    text = re.sub(r'= ', '=', text)
-    text = re.sub(r' \+', '+', text)
-    text = re.sub(r' \*', '*', text)
-    
-    # Remove type hints if not in quotes
-    if not text.endswith(': str'):
-        text = text.replace(': str', '')
+    text = re.sub(r'\) -> \w+:$', '):', text)  # Remove type hints
+    text = re.sub(r' -> \w+$', '', text)  # Remove return types
+    text = re.sub(r'\s+', ' ', text).strip()  # Remove extra spaces
     
     return text
 
@@ -72,15 +45,6 @@ def encode_text(text: str) -> str:
     compressed = zlib.compress(text.encode())
     b64: bytes = base64.b64encode(compressed)
     return b64.decode()
-
-
-def _is_in_quote(line: str, part: str) -> bool:
-    index = line.index(part)
-    before = line[:index]
-    after = line[index + len(part):]
-    before_quotes = before.count('"') + before.count("'")
-    after_quotes = after.count('"') + after.count("'")
-    return before_quotes % 2 == 1 and after_quotes % 2 == 1
 
 
 if __name__ == '__main__':
