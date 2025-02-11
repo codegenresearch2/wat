@@ -4,345 +4,170 @@ import re
 import sys
 import zlib
 
-def minify_code(code: str) -> str:
+def dump_snippet(filename: str) -> str:
     """Minify the code by removing type hints and unnecessary spaces."""
+    text: str = Path(filename).read_text()
+    lines = text.splitlines()
+    lines = [line for line in lines if line.strip()]  # Remove empty lines
+
+    # Remove comments
+    pattern = re.compile(r'#.*')
+    lines = [pattern.sub('', line) for line in lines]
+
     # Remove type hints
-    code = re.sub(r'->\s*', '', code)
+    pattern = re.compile(r'->\s*')
+    lines = [pattern.sub('', line) for line in lines]
+
     # Remove spaces around operators
-    code = re.sub(r'\s*([+*/-])\s*', r'\1', code)
+    pattern = re.compile(r'\s*([+*/-])\s*')
+    lines = [pattern.sub(r'\1', line) for line in lines]
+
     # Remove spaces around commas
-    code = re.sub(r'\s*,\s*', ',', code)
+    pattern = re.compile(r'\s*,\s*')
+    lines = [pattern.sub(',', line) for line in lines]
+
     # Remove spaces around colons
-    code = re.sub(r'\s*:\s*', ':', code)
+    pattern = re.compile(r'\s*:\s*')
+    lines = [pattern.sub(':', line) for line in lines]
+
     # Remove spaces around equals
-    code = re.sub(r'\s*=\s*', '=', code)
+    pattern = re.compile(r'\s*=\s*')
+    lines = [pattern.sub('=', line) for line in lines]
+
     # Remove spaces around parentheses
-    code = re.sub(r'\s*\(\s*', '(', code)
-    code = re.sub(r'\s*\)\s*', ')', code)
+    pattern = re.compile(r'\s*\(\s*')
+    lines = [pattern.sub('(', line) for line in lines]
+    pattern = re.compile(r'\s*\)\s*')
+    lines = [pattern.sub(')', line) for line in lines]
+
     # Remove spaces around brackets
-    code = re.sub(r'\s*\{\s*', '{', code)
-    code = re.sub(r'\s*\}\s*', '}', code)
-    code = re.sub(r'\s*\[\s*', '[', code)
-    code = re.sub(r'\s*\]\s*', ']', code)
+    pattern = re.compile(r'\s*\{\s*')
+    lines = [pattern.sub('{', line) for line in lines]
+    pattern = re.compile(r'\s*\}\s*')
+    lines = [pattern.sub('}', line) for line in lines]
+    pattern = re.compile(r'\s*\[\s*')
+    lines = [pattern.sub('[', line) for line in lines]
+    pattern = re.compile(r'\s*\]\s*')
+    lines = [pattern.sub(']', line) for line in lines]
+
     # Remove spaces around operators
-    code = re.sub(r'\s*([+*/-])\s*', r'\1', code)
+    pattern = re.compile(r'\s*([+*/-])\s*')
+    lines = [pattern.sub(r'\1', line) for line in lines]
+
     # Remove spaces around colons
-    code = re.sub(r'\s*:\s*', ':', code)
+    pattern = re.compile(r'\s*:\s*')
+    lines = [pattern.sub(':', line) for line in lines]
+
     # Remove spaces around equals
-    code = re.sub(r'\s*=\s*', '=', code)
+    pattern = re.compile(r'\s*=\s*')
+    lines = [pattern.sub('=', line) for line in lines]
+
     # Remove spaces around commas
-    code = re.sub(r'\s*,\s*', ',', code)
+    pattern = re.compile(r'\s*,\s*')
+    lines = [pattern.sub(',', line) for line in lines]
+
     # Remove spaces around semicolons
-    code = re.sub(r'\s*;\s*', ';', code)
+    pattern = re.compile(r'\s*;\s*')
+    lines = [pattern.sub(';', line) for line in lines]
+
     # Remove spaces around arrows
-    code = re.sub(r'\s*->\s*', '->', code)
+    pattern = re.compile(r'\s*->\s*')
+    lines = [pattern.sub('->', line) for line in lines]
+
     # Remove spaces around keywords
-    code = re.sub(r'\s*(if|elif|else|for|while|return|break|continue|in|is|and|or|not)\s*', r'\1', code)
+    pattern = re.compile(r'\s*(if|elif|else|for|while|return|break|continue|in|is|and|or|not)\s*')
+    lines = [pattern.sub(r'\1', line) for line in lines]
+
     # Remove spaces around function definitions
-    code = re.sub(r'\s*def\s+', 'def ', code)
+    pattern = re.compile(r'\s*def\s+')
+    lines = [pattern.sub('def ', line) for line in lines]
+
     # Remove spaces around class definitions
-    code = re.sub(r'\s*class\s+', 'class ', code)
+    pattern = re.compile(r'\s*class\s+')
+    lines = [pattern.sub('class ', line) for line in lines]
+
     # Remove spaces around imports
-    code = re.sub(r'\s*import\s+', 'import ', code)
+    pattern = re.compile(r'\s*import\s+')
+    lines = [pattern.sub('import ', line) for line in lines]
+
     # Remove spaces around from
-    code = re.sub(r'\s*from\s+', 'from ', code)
+    pattern = re.compile(r'\s*from\s+')
+    lines = [pattern.sub('from ', line) for line in lines]
+
     # Remove spaces around as
-    code = re.sub(r'\s*as\s+', 'as ', code)
+    pattern = re.compile(r'\s*as\s+')
+    lines = [pattern.sub('as ', line) for line in lines]
+
     # Remove spaces around with
-    code = re.sub(r'\s*with\s+', 'with ', code)
+    pattern = re.compile(r'\s*with\s+')
+    lines = [pattern.sub('with ', line) for line in lines]
+
     # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
+    pattern = re.compile(r'\s*yield\s+')
+    lines = [pattern.sub('yield ', line) for line in lines]
+
     # Remove spaces around raise
-    code = re.sub(r'\s*raise\s+', 'raise ', code)
+    pattern = re.compile(r'\s*raise\s+')
+    lines = [pattern.sub('raise ', line) for line in lines]
+
     # Remove spaces around try
-    code = re.sub(r'\s*try\s+', 'try ', code)
+    pattern = re.compile(r'\s*try\s+')
+    lines = [pattern.sub('try ', line) for line in lines]
+
     # Remove spaces around except
-    code = re.sub(r'\s*except\s+', 'except ', code)
+    pattern = re.compile(r'\s*except\s+')
+    lines = [pattern.sub('except ', line) for line in lines]
+
     # Remove spaces around finally
-    code = re.sub(r'\s*finally\s+', 'finally ', code)
+    pattern = re.compile(r'\s*finally\s+')
+    lines = [pattern.sub('finally ', line) for line in lines]
+
     # Remove spaces around assert
-    code = re.sub(r'\s*assert\s+', 'assert ', code)
+    pattern = re.compile(r'\s*assert\s+')
+    lines = [pattern.sub('assert ', line) for line in lines]
+
     # Remove spaces around pass
-    code = re.sub(r'\s*pass\s+', 'pass ', code)
+    pattern = re.compile(r'\s*pass\s+')
+    lines = [pattern.sub('pass ', line) for line in lines]
+
     # Remove spaces around del
-    code = re.sub(r'\s*del\s+', 'del ', code)
+    pattern = re.compile(r'\s*del\s+')
+    lines = [pattern.sub('del ', line) for line in lines]
+
     # Remove spaces around global
-    code = re.sub(r'\s*global\s+', 'global ', code)
+    pattern = re.compile(r'\s*global\s+')
+    lines = [pattern.sub('global ', line) for line in lines]
+
     # Remove spaces around nonlocal
-    code = re.sub(r'\s*nonlocal\s+', 'nonlocal ', code)
+    pattern = re.compile(r'\s*nonlocal\s+')
+    lines = [pattern.sub('nonlocal ', line) for line in lines]
+
     # Remove spaces around lambda
-    code = re.sub(r'\s*lambda\s+', 'lambda ', code)
+    pattern = re.compile(r'\s*lambda\s+')
+    lines = [pattern.sub('lambda ', line) for line in lines]
+
     # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
+    pattern = re.compile(r'\s*yield\s+')
+    lines = [pattern.sub('yield ', line) for line in lines]
+
     # Remove spaces around return
-    code = re.sub(r'\s*return\s+', 'return ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code = re.sub(r'\s*yield\s+', 'yield ', code)
-    # Remove spaces around yield
-    code
+    pattern = re.compile(r'\s*return\s+')
+    lines = [pattern.sub('return ', line) for line in lines]
+
+    # Join the lines back into a single string
+    minified_code = '\n'.join(lines)
+
+    # Compress and encode the text
+    compressed = zlib.compress(minified_code.encode())
+    encoded = base64.b64encode(compressed).decode()
+
+    return encoded
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <filename>")
+        sys.exit(1)
+
+    filename = sys.argv[1]
+    encoded_text = dump_snippet(filename)
+    print(encoded_text)
