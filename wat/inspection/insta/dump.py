@@ -2,49 +2,45 @@ import base64
 from pathlib import Path
 import re
 import zlib
-from typing import List
+import sys
+from typing import List, Callable, Any
+
+def _is_in_quote(line: str, index: int) -> bool:
+    """Helper function to check if a character is within quotes."""
+    quotes = ['"', "'"]
+    while index >= 0:
+        if line[index] in quotes:
+            return line[index]
+        index -= 1
+    return None
+
+def _remove_comments(line: str) -> str:
+    """Remove comments from a single line of code."""
+    comment_start = line.find('  # ')
+    if comment_start != -1:
+        return line[:comment_start]
+    return line
 
 def minify_code(text: str) -> str:
-    # Remove comments
-    pattern = re.compile(r'  # .+$')
-    text = pattern.sub('', text)
+    """Minify the given code by removing comments and unnecessary spaces."""
+    lines = text.splitlines()
+    lines = [line for line in lines if line.strip()]  # Remove empty lines
+    lines = [_remove_comments(line) for line in lines]
     
-    # Remove type hints
-    pattern = re.compile(r'->\s*\w+')
-    text = pattern.sub(lambda m: m.group(0).replace('->', '->'), text)
+    # Remove type hints and other patterns
+    pattern = re.compile(r'->\s*\w+|,\s*|\s*=\s*|\s*:\s*|\s*==\s*|\s*\+\s*|\s*\*\s*')
+    minified_lines = [pattern.sub('', line) for line in lines]
     
-    # Remove spaces around commas
-    pattern = re.compile(r'\s*,\s*')
-    text = pattern.sub(',', text)
-    
-    # Remove spaces around equals
-    pattern = re.compile(r'\s*=\s*')
-    text = pattern.sub('=', text)
-    
-    # Remove spaces around colons
-    pattern = re.compile(r'\s*:\s*')
-    text = pattern.sub(':', text)
-    
-    # Remove spaces around double equals
-    pattern = re.compile(r'\s*==\s*')
-    text = pattern.sub('==', text)
-    
-    # Remove spaces around plus
-    pattern = re.compile(r'\s*\+\s*')
-    text = pattern.sub('+', text)
-    
-    # Remove spaces around asterisk
-    pattern = re.compile(r'\s*\*\s*')
-    text = pattern.sub('*', text)
-    
-    return text
+    return '\n'.join(minified_lines)
 
 def encode_text(text: str) -> str:
+    """Compress and encode the given text using base64."""
     compressed = zlib.compress(text.encode())
     encoded = base64.b64encode(compressed).decode()
     return encoded
 
 def dump_snippet(filename: str) -> str:
+    """Read, minify, and encode the code snippet from the given file."""
     text = Path(filename).read_text()
     minified_text = minify_code(text)
     encoded_text = encode_text(minified_text)
