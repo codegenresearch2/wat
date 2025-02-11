@@ -15,14 +15,11 @@ def dump_snippet(filename: str) -> str:
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
 
-    Path('.inspection_minified.py').write_text(text)
-
     code: str = encode_text(text)
     return code
 
 
 def minify_code(text: str) -> str:
-    """Trim type hints and empty spaces"""
     text = re.sub(r'\) -> \'Wat\':$', '):', text)
     text = re.sub(r'\) -> Union\[.+\]:$', '):', text)
     if "'" not in text and '"' not in text:
@@ -43,19 +40,12 @@ def minify_code(text: str) -> str:
         text = re.sub(r': Dict(\[.+\])?', '', text)
         text = re.sub(r': List(\[.+\])?', '', text)
         text = text.replace(': Type)', ')')
-        # text = text.replace(' = ', '=')
-        # text = text.replace(', ', ',')
-        # text = text.replace(': ', ':')
-    # text = text.replace(' == ', '==')
-    # text = text.replace(' + ', '+')
-    # text = text.replace(' * ', '*')
-    # text = text.replace(' = \'', '=\'')
+        text = text.replace('from typing import Any, Dict, List, Optional, Type, Iterable, Union', 'from typing import Any, Optional, Type')
     if not text.endswith(': str'):
         text = text.replace(': str', '')
     if text.count(' = ') == 1:
         if not _is_in_quote(text, ' = '):
             text = text.replace(' = ', '=')
-    text = text.replace('from typing import Any, Dict, List, Optional, Type, Iterable, Union', 'from typing import Any, Optional, Type')
     return text
 
 
