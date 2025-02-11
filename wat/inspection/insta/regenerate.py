@@ -22,8 +22,8 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
 
     print(f'Insta-Load replaced: {len(old_code)} characters -> {len(new_code)} characters')
 
-    for i, dst_filename in enumerate(dst_filenames):
-        Path(dst_filename).write_text(replaced_contents[i])
+    for dst_filename in dst_filenames:
+        Path(dst_filename).write_text(replaced_contents.pop(0))
         print(f'Code replaced in {dst_filename}')
 
     print('All replacements have been made.')
