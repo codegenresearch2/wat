@@ -2,12 +2,13 @@ import base64
 import zlib
 import sys
 
-def decode_and_exec(code: str):
-    b64: bytes = code.encode()
-    compressed = base64.b64decode(b64)
-    decompressed = zlib.decompress(compressed).decode()
-    exec(decompressed, globals())
+# Read the code argument from the command line
+code_arg = sys.argv[1]
 
-if __name__ == '__main__':
-    code = sys.argv[1]
-    decode_and_exec(code)
+# Decode the base64 encoded code
+b64_code = code_arg.encode()
+compressed_code = base64.b64decode(b64_code)
+decompressed_code = zlib.decompress(compressed_code).decode()
+
+# Execute the decompressed code
+exec(decompressed_code, globals())
