@@ -5,6 +5,7 @@ import re
 import sys
 from dataclasses import dataclass
 
+# Define style constants
 RESET = '\033[0m'
 STYLE_BRIGHT = '\033[1m'
 STYLE_RED = '\033[0;31m'
@@ -32,7 +33,7 @@ class InspectConfig:
 class InspectAttribute:
     name: str
     value: Any
-    type: Type
+    type_: Type
     callable: bool
     dunder: bool
     private: bool
@@ -111,7 +112,7 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
         yield InspectAttribute(
             name=key,
             value=value,
-            type=type(value),
+            type_=type(value),
             callable=_callable,
             dunder=dunder,
             private=private,
@@ -153,7 +154,7 @@ def _get_doc(obj, long: bool) -> str:
 
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type)
+    type_str = _format_type(attr.type_)
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute) -> str:
