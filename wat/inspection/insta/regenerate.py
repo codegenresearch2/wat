@@ -6,9 +6,8 @@ from wat.inspection.insta.instaload import code
 
 def _regenerate(src_filename: str, dst_filenames: list[str]):
     old_code: str = code.decode()
-    replaced_contents: list[str] = []
-
     new_code: str = dump_snippet(src_filename)
+    replaced_contents: list[str] = []
 
     for dst_filename in dst_filenames:
         content = Path(dst_filename).read_text()
