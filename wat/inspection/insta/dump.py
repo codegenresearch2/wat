@@ -5,6 +5,12 @@ import sys
 import zlib
 from typing import List
 
+def _is_in_quote(line: str, index: int) -> bool:
+    """Check if the character at the given index is within quotes."""
+    # This is a placeholder for the actual implementation of _is_in_quote
+    # The actual implementation should check if the character at the given index is within quotes
+    pass
+
 def minify_code(code: str) -> str:
     """Minify the code by removing type hints and unnecessary spaces."""
     lines = code.splitlines()
