@@ -3,7 +3,7 @@ from pathlib import Path
 import re
 import sys
 import zlib
-from typing import List
+from typing import List, Union, Optional, Dict, Iterable, Type
 
 
 def dump_snippet(filename: str) -> str:
@@ -14,9 +14,7 @@ def dump_snippet(filename: str) -> str:
     lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
-
     # Path('wat/inspection/insta/.inspection_minified.py').write_text(text)
-
     code: str = encode_text(text)
     return code
 
@@ -30,7 +28,6 @@ def minify_code(text: str) -> str:
         text = text.replace(': int = ', '=')
         text = text.replace(': List[str] = ', '=')
         text = text.replace(': str, ', ',')
-        text = text.replace(': Any,', ',')
         text = text.replace(': bool)', ')')
         text = text.replace(': int)', ')')
         text = text.replace(': InspectAttribute', '')
@@ -43,19 +40,11 @@ def minify_code(text: str) -> str:
         text = re.sub(r': Dict(\[.+\])?', '', text)
         text = re.sub(r': List(\[.+\])?', '', text)
         text = text.replace(': Type)', ')')
-        # text = text.replace(' = ', '=')
-        # text = text.replace(', ', ',')
-        # text = text.replace(': ', ':')
-    # text = text.replace(' == ', '==')
-    # text = text.replace(' + ', '+')
-    # text = text.replace(' * ', '*')
-    # text = text.replace(' = \'', '=\'')
     if not text.endswith(': str'):
         text = text.replace(': str', '')
     if text.count(' = ') == 1:
         if not _is_in_quote(text, ' = '):
             text = text.replace(' = ', '=')
-    text = text.replace('from typing import Any, Dict, List, Optional, Type, Iterable, Union', 'from typing import Any, Optional, Type')
     return text
 
 
