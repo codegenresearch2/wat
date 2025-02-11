@@ -3,5 +3,5 @@ import wat
 import datetime
 
 if __name__ == '__main__':
-    result = wat.caller + datetime.datetime.now()
+    result = wat.caller / datetime.datetime.now()
     print(result)
