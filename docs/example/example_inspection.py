@@ -3,5 +3,4 @@ import wat
 import math
 
 if __name__ == '__main__':
-    result = math.sqrt(2 + 2)
-    print(result)
+    wat.caller(math.sqrt(2 + 2))
