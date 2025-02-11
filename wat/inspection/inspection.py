@@ -69,10 +69,7 @@ def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         yield f'parents: {parents}'
 
     if callable(getattr(obj, '__len__', None)):
-        try:
-            yield f'len: {_format_value(len(obj))}'
-        except TypeError:
-            pass
+        yield f'len: {_format_value(len(obj))}'
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
@@ -348,19 +345,19 @@ class Wat:
         return '<WAT Inspector object>'
     
     def _print_help(self):
-        text = f'''Try wat / object or wat.modifiers / object to inspect an object. Modifiers are:
-  .short or .s to hide attributes (variables and methods)
-  .dunder to print dunder attributes
-  .code to print source code of a function, method or class
-  .long to print non-abbreviated values and documentation
-  .nodocs to hide documentation for functions and classes
-  .caller to show how and where the inspection was called
-  .all to include all information
-  .ret to return the inspected object
-  .str to return the output string instead of printing
-  .gray to disable colorful output in the console
-Call wat.locals or wat() to inspect local variables.
-Call wat.globals to inspect global variables.'''
+        text = f'''Try {STYLE_YELLOW}wat / object{RESET} or {STYLE_YELLOW}wat.modifiers / object{RESET} to inspect an {STYLE_YELLOW}object{RESET}. {STYLE_BRIGHT}Modifiers{RESET} are:
+  {STYLE_GREEN}.short{RESET} or {STYLE_GREEN}.s{RESET} to hide attributes (variables and methods)
+  {STYLE_GREEN}.dunder{RESET} to print dunder attributes
+  {STYLE_GREEN}.code{RESET} to print source code of a function, method or class
+  {STYLE_GREEN}.long{RESET} to print non-abbreviated values and documentation
+  {STYLE_GREEN}.nodocs{RESET} to hide documentation for functions and classes
+  {STYLE_GREEN}.caller{RESET} to show how and where the inspection was called
+  {STYLE_GREEN}.all{RESET} to include all information
+  {STYLE_GREEN}.ret{RESET} to return the inspected {STYLE_YELLOW}object{RESET}
+  {STYLE_GREEN}.str{RESET} to return the output string instead of printing
+  {STYLE_GREEN}.gray{RESET} to disable colorful output in the console
+Call {STYLE_YELLOW}wat.locals{RESET} or {STYLE_YELLOW}wat(){RESET} to inspect local variables.
+Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
         if not _color_enabled():
             text = _strip_color(text)
         print(text)
