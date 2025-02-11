@@ -189,11 +189,11 @@ def _format_value(value: Any, indent: int = 0) -> str:
     if isinstance(value, str):
         return f"'{value}'"
     if value is None:
-        return 'None'
+        return f'{STYLE_MAGENTA}None{RESET}'
     if value is True:
-        return 'True'
+        return f'{STYLE_BRIGHT_GREEN}True{RESET}'
     if value is False:
-        return 'False'
+        return f'{STYLE_BRIGHT_RED}False{RESET}'
     if isinstance(value, (int, float)):
         return str(value)
     if isinstance(value, dict):
@@ -234,8 +234,8 @@ def _format_list_value(lst: List, indent: int) -> str:
 def _format_type(type_: Type) -> str:
     module = type_.__module__
     if module is None or module == str.__class__.__module__:  # built-in type
-        return type_.__name__
-    return f'{module}.{type_.__name__}'
+        return f'{STYLE_YELLOW}{type_.__name__}{RESET}'
+    return f'{STYLE_YELLOW}{module}.{type_.__name__}{RESET}'
 
 
 def _get_parent_types(type_: Type) -> Iterable[str]:
@@ -258,7 +258,7 @@ def _shorten_string(text: str) -> str:
         first_line = first_line + '…'
     if len(first_line) > 100:
         first_line = first_line[:100] + '…'
-    return first_line
+    return first_line + RESET
 
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
