@@ -92,24 +92,24 @@ def test_inspect_instance():
     instance = Hero('batman')
     output = inspect_format(instance)
     assert_multiline_match(output, r'''
-value: <test_inspect\.test_inspect_instance\.<locals>\.Hero object at .*>
-type: test_inspect\.Hero
+value: <test_inspect.test_inspect_instance.<locals>.Hero object at .*>
+type: test_inspect.Hero
 
 Public attributes:
   a: str = 'batman'
 
-  def shout\(loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout(loudness: int) -> str \# Do something very very very very very very very very very very very very very very very very very st…
 ''')
                            
     output = inspect_format(Hero)
     assert_multiline_match(output, r'''
-value: <class 'test_inspect\.test_inspect_instance\.<locals>\.Hero'>
+value: <class 'test_inspect.test_inspect_instance.<locals>.Hero'>
 type: type
-signature: class Hero\(name: str\)
+signature: class Hero(name: str)
 """A hero"""
 
 Public attributes:
-  def shout\(self, loudness: int\) -> str \# Do something very very very very very very very very very very very very very very very very very st…
+  def shout(self, loudness: int) -> str \# Do something very very very very very very very very very very very very very very very very very st…
 ''')
 
 
@@ -126,7 +126,7 @@ def test_inspect_function():
     assert_multiline_match(output, r'''
 value: <function test_inspect_function.<locals>.foo at .*>
 type: function
-signature: def foo\(a: int, b: str = 'bar'\) -> str
+signature: def foo(a: int, b: str = 'bar') -> str
 """
 Do something
 dumb
@@ -171,9 +171,9 @@ def test_inspect_datetime_repr():
     output = inspect_format(datetime(2023, 8, 1), short=True)
     assert_multiline_match(output, r'''
 str: 2023-08-01 00:00:00
-repr: datetime.datetime\(2023, 8, 1, 0, 0\)
+repr: datetime.datetime(2023, 8, 1, 0, 0)
 type: datetime.datetime
-parents: datetime\.date
+parents: datetime.date
 ''')
 
 
@@ -210,7 +210,7 @@ def test_inspect_async_def():
     assert_multiline_match(output, r'''
 value: <function test_inspect_async_def.<locals>.looper at .*>
 type: function
-signature: async def looper\(\)
+signature: async def looper()
 ''')
 
 
@@ -298,9 +298,9 @@ def test_wat_modifiers_all_but_nodocs():
     assert_multiline_match(capture.output(), r'''
 value: <function match at .*>
 type: function
-signature: def match\(pattern, string, flags=0\)
+signature: def match(pattern, string, flags=0)
 source code:
-def match\(pattern, string, flags=0\):
+def match(pattern, string, flags=0):
     """.*
     .*"""
     .*
@@ -315,8 +315,8 @@ def test_list_parent_classes():
     assert_multiline_match(output, r'''
 str: '(Parent\.FIRST|first)'
 repr: <Parent\.FIRST: 'first'>
-type: test_inspect\.Parent
-parents: str, enum\.Enum
+type: test_inspect.Parent
+parents: str, enum.Enum
 len: 5
 ''')
     
@@ -346,9 +346,9 @@ def test_pydantic_class():
     output = inspect_format(Person(name='george'), short=True)
     assert_multiline_match(output, r'''
 str: name='george'
-repr: Person\(name='george'\)
-type: test_inspect\.Person
-parents: pydantic\.main\.BaseModel
+repr: Person(name='george')
+type: test_inspect.Person
+parents: pydantic.main.BaseModel
 ''')
 
 
@@ -366,13 +366,13 @@ def test_listing_private_attributes():
     
     output = inspect_format(Foo('bar'))
     assert_multiline_match(output, r'''
-value: <test_inspect\.test_listing_private_attributes\.<locals>\.Foo object at .*>
-type: test_inspect\.Foo
+value: <test_inspect.test_listing_private_attributes.<locals>.Foo object at .*>
+type: test_inspect.Foo
 
 Private attributes:
   _name: str = 'bar'
 
-  def _private_method\(\)
+  def _private_method()
 ''')
 
 
@@ -412,8 +412,8 @@ def test_inspect_overriden_len():
 
     output = inspect_format(Foo())
     assert_multiline_match(output, r'''
-value: <test_inspect\.test_inspect_overriden_len\.<locals>\.Foo object at .*>
-type: test_inspect\.Foo
+value: <test_inspect.test_inspect_overriden_len.<locals>.Foo object at .*>
+type: test_inspect.Foo
 len: 4
 ''')
 
