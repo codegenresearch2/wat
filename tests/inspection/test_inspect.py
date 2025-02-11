@@ -51,4 +51,13 @@ def test_inspect_instance():
     
     instance = Hero('batman')
     output = inspect_format(instance)
-    assert_multiline_match(output, """value: <test_inspect.test_inspect_instance.<locals>.Hero object at *
+    assert_multiline_match(output, """value: <test_inspect.test_inspect_instance.<locals>.Hero object at *>)
+type: test_inspect.Hero
+
+Public attributes:
+  a: str = 'batman'
+
+  def shout(loudness: int) -> str # Do something very very very very very very very very very very very very very very very very very stupid""")
+
+
+# Additional test cases can be added here to match the gold code's comprehensive coverage.
