@@ -19,9 +19,9 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         assert old_code in content, f'Cannot find current Insta-Load code in {dst_filename}'
         assert content.count(old_code) == 1, 'Old Insta-Load code appears more than once in the content'
         replaced_content = content.replace(old_code, new_code)
-        replaced_contents.append((dst_filename, replaced_content))
+        replaced_contents.append(replaced_content)
     
-    for i, (dst_filename, replaced_content) in enumerate(replaced_contents):
+    for dst_filename, replaced_content in zip(dst_filenames, replaced_contents):
         Path(dst_filename).write_text(replaced_content)
         print(f'Code replaced in {dst_filename}')
 
