@@ -1,6 +1,7 @@
 import inspect
 import os
 import re
+import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 from dataclasses import dataclass
 
@@ -75,7 +76,10 @@ def inspect_format(
         output.extend(_render_attrs_section(attributes, config))
 
     if _color_enabled():  # horizontal bar
-        terminal_width = os.get_terminal_size().columns
+        try:
+            terminal_width = os.get_terminal_size().columns
+        except OSError:
+            terminal_width = 80  # Fallback to a default width if terminal size cannot be determined
         if not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
             output.insert(0, '─' * terminal_width)
             output.append('─' * terminal_width)
@@ -291,7 +295,10 @@ class Wat:
         self._config = {}
 
     def __repr__(self) -> str:
-        self._print_help()
+        try:
+            self._print_help()
+        except NameError:
+            return ''
         return ''
         
     def __str__(self) -> str:
