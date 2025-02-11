@@ -18,7 +18,7 @@ class InspectConfig:
 class InspectAttribute:
     name: str
     value: Any
-    type_: Type
+    type: Type
     callable: bool
     dunder: bool
     private: bool
