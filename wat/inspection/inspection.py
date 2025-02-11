@@ -1,46 +1,32 @@
-from dataclasses import dataclass
 import inspect
 import os
 import re
 import sys
 from typing import Any, Dict, List, Optional, Type, Iterable, Union
 
-
-@dataclass
 class InspectConfig:
-    short: bool
-    dunder: bool
-    nodocs: bool
-    long: bool
-    code: bool
-    caller: bool
+    def __init__(self, short: bool, dunder: bool, nodocs: bool, long: bool, code: bool, caller: bool):
+        self.short = short
+        self.dunder = dunder
+        self.nodocs = nodocs
+        self.long = long
+        self.code = code
+        self.caller = caller
 
-
-@dataclass
 class InspectAttribute:
-    name: str
-    value: Any
-    type: Type
-    callable: bool
-    dunder: bool
-    private: bool
-    signature: Optional[str]
-    doc: Optional[str]
+    def __init__(self, name: str, value: Any, type_: Type, callable: bool, dunder: bool, private: bool, signature: Optional[str], doc: Optional[str]):
+        self.name = name
+        self.value = value
+        self.type = type_
+        self.callable = callable
+        self.dunder = dunder
+        self.private = private
+        self.signature = signature
+        self.doc = doc
 
-
-def inspect_format(
-    obj: Any,
-    *,
-    short: bool = False,
-    dunder: bool = False,
-    nodocs: bool = False,
-    long: bool = False,
-    code: bool = False,
-    caller: bool = False,
-    all: bool = False,
-) -> str:
+def inspect_format(obj: Any, *, short: bool = False, dunder: bool = False, nodocs: bool = False, long: bool = False, code: bool = False, caller: bool = False, all: bool = False) -> str:
     config = InspectConfig(short=short, dunder=dunder or all, nodocs=nodocs, long=long or all, code=code or all, caller=caller or all)
-    output: List[str] = list(_produce_inspect_lines(obj, config))
+    output: List[str] = list(_yield_inspect_lines(obj, config))
 
     if sys.stdout.isatty() and _color_enabled():  # horizontal bar
         terminal_width = os.get_terminal_size().columns
@@ -52,8 +38,7 @@ def inspect_format(
         text = _strip_color(text)
     return text
 
-
-def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
+def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
     repr_value: str = repr(obj)
     if repr_value == str(obj) or repr_value == _strip_color(str_value):
@@ -98,7 +83,6 @@ def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         yield from _render_attrs_section(attributes, config)
 
-
 def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
     for key in dir(obj):
         dunder = key.startswith('__') and key.endswith('__')
@@ -123,7 +107,6 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
             doc=doc,
         )
 
-
 def _get_callable_signature(name: str, obj) -> Optional[str]:
     try:
         _signature = str(inspect.signature(obj))
@@ -140,13 +123,11 @@ def _get_callable_signature(name: str, obj) -> Optional[str]:
         prefix = ''
     return f'{STYLE_BLUE}{prefix}{STYLE_BRIGHT_GREEN}{name}{STYLE_GREEN}{_signature}{RESET}'
 
-
 def _get_source_code(obj) -> Optional[str]:
     try:
         return inspect.getsource(obj)
     except (OSError, TypeError, IndentationError) as e:
         return f'failed to get source code: {type(e)}: {e}'
-
 
 def _get_doc(obj, long: bool) -> Optional[str]:
     doc = inspect.getdoc(obj)
@@ -158,12 +139,10 @@ def _get_doc(obj, long: bool) -> Optional[str]:
     else:
         return _shorten_string(doc)
 
-
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
     type_str = _format_type(attr.type)
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
-
 
 def _render_attr_method(attr: InspectAttribute) -> str:
     if not attr.signature:
@@ -176,13 +155,11 @@ def _render_attr_method(attr: InspectAttribute) -> str:
     else:
         return f'  {attr.signature}'
 
-
 def _format_short_value(value, long: bool) -> str:
     value_str = _format_value(value)
     if long:
         return value_str
     return _shorten_string(value_str)
-
 
 def _format_value(value, indent: int = 0) -> str:
     if isinstance(value, str):
@@ -205,7 +182,6 @@ def _format_value(value, indent: int = 0) -> str:
         return f'{STYLE_YELLOW}<{STYLE_BRIGHT_YELLOW}{angle_bracket_match.group(1)}{STYLE_YELLOW}>{RESET}'
     return f'{STYLE_GREEN}{str_val}{RESET}'
 
-
 def _format_dict_value(dic: Dict, indent: int) -> str:
     if indent > 30:
         return f'{STYLE_BRIGHT_RED}ERROR: too deeply nested{RESET}'
@@ -222,7 +198,6 @@ def _format_dict_value(dic: Dict, indent: int) -> str:
     else:
         return f'{STYLE_YELLOW}{{}}{RESET}'
 
-
 def _format_list_value(lst: List, indent: int) -> str:
     lines: List[str] = []
     for value in lst:
@@ -235,13 +210,11 @@ def _format_list_value(lst: List, indent: int) -> str:
     else:
         return f'{STYLE_YELLOW}[]{RESET}'
 
-
 def _format_type(type_: Type) -> str:
     module = type_.__module__
     if module is None or module == str.__class__.__module__:  # built-in type
         return f'{STYLE_YELLOW}{type_.__name__}{RESET}'
     return f'{STYLE_YELLOW}{module}.{type_.__name__}{RESET}'
-
 
 def _get_parent_types(type_: Type) -> Iterable[str]:
     if hasattr(type_, '__mro__'):
@@ -249,7 +222,6 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
             if index == 0 or base_type is object:
                 continue
             yield _format_type(base_type)
-
 
 def _get_caller_info() -> Iterable[str]:
     frame = inspect.currentframe()
@@ -267,7 +239,6 @@ def _get_caller_info() -> Iterable[str]:
     finally:
         del frame
 
-
 def _shorten_string(text: str) -> str:
     first_line, _, rest = text.partition('\n')
     if rest:
@@ -275,7 +246,6 @@ def _shorten_string(text: str) -> str:
     if len(first_line) > 100:
         first_line = first_line[:100] + '…'
     return first_line + RESET
-
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
     public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
@@ -315,7 +285,6 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
         for attr in dunder_methods:
             yield _render_attr_method(attr)
 
-
 def _list_local_variables() -> Dict[str, Any]:
     frame = inspect.currentframe()
     try:
@@ -325,7 +294,6 @@ def _list_local_variables() -> Dict[str, Any]:
         return frame.f_locals if frame is not None else {}
     finally:
         del frame
-
 
 def _list_global_variables() -> Dict[str, Any]:
     frame = inspect.currentframe()
@@ -337,7 +305,6 @@ def _list_global_variables() -> Dict[str, Any]:
     finally:
         del frame
 
-
 def _render_variables(variables: Dict[str, Any], title: str) -> Iterable[str]:
     yield f'{STYLE_BRIGHT}{title}:{RESET}'
     for name in sorted(variables.keys()):
@@ -345,7 +312,6 @@ def _render_variables(variables: Dict[str, Any], title: str) -> Iterable[str]:
         value_str = _format_short_value(value, long=False)
         type_str = _format_type(type(value))
         yield f'  {STYLE_BRIGHT_YELLOW}{name}{STYLE_YELLOW}: {type_str} = {value_str}'
-
 
 def _color_enabled() -> bool:
     env_color = {
@@ -356,10 +322,8 @@ def _color_enabled() -> bool:
         return env_color
     return sys.stdout.isatty()
 
-
 def _strip_color(text: str) -> str:
     return re.sub(r'\x1b\[\d+(;\d+)?m', '', text)
-
 
 class Wat:
     '''Inspector instance to examine unknown objects with short operators'''
@@ -449,8 +413,4 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
             new_wat._inspect_kwargs['short'] = True
         elif name == 'long':
             new_wat._inspect_kwargs['long'] = True
-        elif name == 'dunder':
-            new_wat._inspect_kwargs['dunder'] = True
-        elif name == 'code':
-            new_wat._inspect_kwargs['code'] = True
-        elif
+        elif name == 'd
