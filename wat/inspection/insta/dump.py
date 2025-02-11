@@ -1,26 +1,54 @@
 import base64
 from pathlib import Path
 import re
-import sys
 import zlib
 from typing import List
 
-def dump_snippet(filename: str) -> str:
-    text: str = Path(filename).read_text()
-    lines: List[str] = text.splitlines()
-    lines = [line for line in lines if line.strip()]  # remove empty lines
-    minified_lines = [re.sub(r'  # .+$', '', line) for line in lines]  # trim comments
-    minified_lines = [re.sub(r'->\s*\w+', '', line) for line in minified_lines]  # remove type hints
-    minified_lines = [re.sub(r'\s*,\s*', ',', line) for line in minified_lines]  # remove spaces around commas
-    minified_lines = [re.sub(r'\s*=\s*', '=', line) for line in minified_lines]  # remove spaces around equals
-    minified_lines = [re.sub(r'\s*:\s*', ':', line) for line in minified_lines]  # remove spaces around colons
-    minified_lines = [re.sub(r'\s*==\s*', '==', line) for line in minified_lines]  # remove spaces around double equals
-    minified_lines = [re.sub(r'\s*\+\s*', '+', line) for line in minified_lines]  # remove spaces around plus
-    minified_lines = [re.sub(r'\s*\*\s*', '*', line) for line in minified_lines]  # remove spaces around asterisk
-    minified_text = '\n'.join(minified_lines)
-    compressed = zlib.compress(minified_text.encode())
+def minify_code(text: str) -> str:
+    # Remove comments
+    pattern = re.compile(r'  # .+$')
+    text = pattern.sub('', text)
+    
+    # Remove type hints
+    pattern = re.compile(r'->\s*\w+')
+    text = pattern.sub(lambda m: m.group(0).replace('->', '->'), text)
+    
+    # Remove spaces around commas
+    pattern = re.compile(r'\s*,\s*')
+    text = pattern.sub(',', text)
+    
+    # Remove spaces around equals
+    pattern = re.compile(r'\s*=\s*')
+    text = pattern.sub('=', text)
+    
+    # Remove spaces around colons
+    pattern = re.compile(r'\s*:\s*')
+    text = pattern.sub(':', text)
+    
+    # Remove spaces around double equals
+    pattern = re.compile(r'\s*==\s*')
+    text = pattern.sub('==', text)
+    
+    # Remove spaces around plus
+    pattern = re.compile(r'\s*\+\s*')
+    text = pattern.sub('+', text)
+    
+    # Remove spaces around asterisk
+    pattern = re.compile(r'\s*\*\s*')
+    text = pattern.sub('*', text)
+    
+    return text
+
+def encode_text(text: str) -> str:
+    compressed = zlib.compress(text.encode())
     encoded = base64.b64encode(compressed).decode()
     return encoded
+
+def dump_snippet(filename: str) -> str:
+    text = Path(filename).read_text()
+    minified_text = minify_code(text)
+    encoded_text = encode_text(minified_text)
+    return encoded_text
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
