@@ -118,7 +118,7 @@ def _iter_attributes(obj: Any, config: InspectConfig) -> Iterable[InspectAttribu
         yield InspectAttribute(
             name=key,
             value=value,
-            type=type(value),
+            type_=type(value),
             callable=callable_,
             dunder=dunder,
             private=private,
@@ -172,7 +172,7 @@ def _get_doc(obj: Any, long: bool) -> Optional[str]:
 
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type)
+    type_str = _format_type(attr.type_)
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute) -> str:
