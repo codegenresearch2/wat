@@ -40,49 +40,45 @@ def inspect_format(
     str_value = _format_value(obj)
     repr_value: str = repr(obj)
     if repr_value == str(obj) or repr_value == _strip_color(str_value):
-        output.append(f'value: {str_value}')
+        output.append(f'{STYLE_BRIGHT_BLUE}value:{RESET} {str_value}')
     else:
-        output.append(f'str: {str_value}')
-        output.append(f'repr: {repr_value}')
+        output.append(f'{STYLE_BRIGHT_BLUE}str:{RESET} {str_value}')
+        output.append(f'{STYLE_BRIGHT_BLUE}repr:{RESET} {repr_value}')
 
     str_type = _format_type(type(obj))
-    output.append(f'type: {str_type}')
+    output.append(f'{STYLE_BRIGHT_BLUE}type:{RESET} {str_type}')
     parents = _format_parent_types(obj)
     if parents:
-        output.append(f'parents: {parents}')
+        output.append(f'{STYLE_BRIGHT_BLUE}parents:{RESET} {parents}')
 
     if isinstance(obj, (list, dict, str, bytes, bytearray, tuple, set, frozenset, range)):
-        output.append(f'len: {_format_value(len(obj))}')
+        output.append(f'{STYLE_BRIGHT_BLUE}len:{RESET} {_format_value(len(obj))}')
  
     if callable(obj):
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj)
-        output.append(f'signature: {signature}')
+        output.append(f'{STYLE_BRIGHT_BLUE}signature:{RESET} {signature}')
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
         if doc.count('\n') == 0:
-            output.append(f'"""{doc}"""')
+            output.append(f'{STYLE_GRAY}"""{doc}"""{RESET}')
         else:
-            output.extend([f'"""', doc, f'"""'])
+            output.extend([f'{STYLE_GRAY}"""', doc, f'"""{RESET}'])
 
     if config.code and (inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
-            output.append(f'source code:\n{source}')
+            output.append(f'{STYLE_BRIGHT_BLUE}source code:{RESET}\n{source}')
 
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
         output.extend(_render_attrs_section(attributes, config))
 
-    if _color_enabled():  # horizontal bar
-        try:
-            terminal_width = os.get_terminal_size().columns
-        except OSError:
-            terminal_width = 80  # Fallback to a default width if terminal size cannot be determined
-        if not ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
-            output.insert(0, '─' * terminal_width)
-            output.append('─' * terminal_width)
+    if _color_enabled() and sys.stdout.isatty():  # horizontal bar
+        terminal_width = os.get_terminal_size().columns
+        output.insert(0, STYLE_BLUE + '─' * terminal_width + RESET)
+        output.append(STYLE_BLUE + '─' * terminal_width + RESET)
 
     text = '\n'.join(line for line in output if line is not None)
     if (not sys.stdout.isatty()) or ("PYTHON_WAT_DISABLECOLOR" in os.environ and os.environ["PYTHON_WAT_DISABLECOLOR"] == 'true'):
@@ -165,9 +161,9 @@ def _render_attr_method(attr: InspectAttribute) -> str:
         return f'  {attr.name}(…)'
     if attr.doc:
         if attr.doc.count('\n') == 0:
-            return f'  {attr.signature}  # {attr.doc}'
+            return f'  {attr.signature} {STYLE_GRAY}# {attr.doc}{RESET}'
         else:
-            return f'  {attr.signature}:\n"""\n{attr.doc}\n"""'
+            return f'  {attr.signature}:\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
     else:
         return f'  {attr.signature}'
 
@@ -260,7 +256,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if public_vars or public_methods:
         yield ""
-        yield "Public attributes:"
+        yield f"{STYLE_BRIGHT}Public attributes:{RESET}"
         for attr in public_vars:
             yield _render_attr_variable(attr, config)
         if public_vars and public_methods:
@@ -270,7 +266,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
     
     if private_vars or private_methods:
         yield ""
-        yield "Private attributes:"
+        yield f"{STYLE_BRIGHT}Private attributes:{RESET}"
         for attr in private_vars:
             yield _render_attr_variable(attr, config)
         if private_vars and private_methods:
@@ -280,7 +276,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if config.dunder and dunder_attrs:
         yield ""
-        yield "Dunder attributes:"
+        yield f"{STYLE_BRIGHT}Dunder attributes:{RESET}"
         for attr in dunder_vars:
             yield _render_attr_variable(attr, config)
         if dunder_vars and dunder_methods:
@@ -295,10 +291,7 @@ class Wat:
         self._config = {}
 
     def __repr__(self) -> str:
-        try:
-            self._print_help()
-        except NameError:
-            return ''
+        self._print_help()
         return ''
         
     def __str__(self) -> str:
