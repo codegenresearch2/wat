@@ -54,45 +54,35 @@ def inspect_format(
 
 
 def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
-    str_value = _format_value(obj)
-    repr_value: str = repr(obj)
-    if repr_value == str_value or repr_value == _strip_color(str_value):
-        yield f'{STYLE_BRIGHT_BLUE}value:{RESET} {str_value}'
+    if isinstance(obj, str):
+        yield f'{{"value": {repr(obj)}, "type": {type(obj).__name__}}}'
+    elif obj is None:
+        yield f'{{"value": None, "type": {type(None).__name__}}}'
+    elif isinstance(obj, (int, float)):
+        yield f'{{"value": {obj}, "type": {type(obj).__name__}}}'
+    elif isinstance(obj, dict):
+        yield _format_dict_value(obj)
+    elif isinstance(obj, list):
+        yield _format_list_value(obj)
     else:
-        yield f'{STYLE_BRIGHT_BLUE}str:{RESET} {str_value}'
-        yield f'{STYLE_BRIGHT_BLUE}repr:{RESET} {STYLE_BRIGHT}{repr_value}{RESET}'
-
-    str_type = _format_type(type(obj))
-    yield f'{STYLE_BRIGHT_BLUE}type:{RESET} {str_type}'
-    parents = ', '.join(_get_parent_types(type(obj)))
-    if parents:
-        yield f'{STYLE_BRIGHT_BLUE}parents:{RESET} {parents}'
-
-    if callable(getattr(obj, '__len__', None)):
-        try:
-            yield f'{STYLE_BRIGHT_BLUE}len:{RESET} {_format_value(len(obj))}'
-        except TypeError:
-            pass
+        yield f'{{"value": {repr(obj)}, "type": {type(obj).__name__}}}'
 
     if callable(obj):
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj)
-        yield f'{STYLE_BRIGHT_BLUE}signature:{RESET} {signature}'
+        yield f'{{"signature": {signature}}}'
 
     if config.caller:
         yield from _retrieve_caller_info()
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
-        if doc.count('\n') == 0:
-            yield f'{STYLE_GRAY}"""{doc}"""{RESET}'
-        else:
-            yield from [f'{STYLE_GRAY}"""', doc, f'"""{RESET}']
+        yield f'{{"doc": {repr(doc)}}}'
 
     if config.code and (inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
-            yield f'{STYLE_BRIGHT_BLUE}source code:{RESET}\n{source}'
+            yield f'{{"source_code": {repr(source)}}}'
 
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
@@ -169,7 +159,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if public_vars or public_methods:
         yield ''
-        yield f'{STYLE_BRIGHT}Public attributes:{RESET}'
+        yield 'Public attributes:'
         for attr in public_vars:
             yield _render_attr_variable(attr, config)
         if public_vars and public_methods:
@@ -179,7 +169,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
     
     if private_vars or private_methods:
         yield ''
-        yield f'{STYLE_BRIGHT}Private attributes:{RESET}'
+        yield 'Private attributes:'
         for attr in private_vars:
             yield _render_attr_variable(attr, config)
         if private_vars and private_methods:
@@ -189,7 +179,7 @@ def _render_attrs_section(attributes: List[InspectAttribute], config: InspectCon
 
     if config.dunder and (dunder_vars or dunder_methods):
         yield ''
-        yield f'{STYLE_BRIGHT}Dunder attributes:{RESET}'
+        yield 'Dunder attributes:'
         for attr in dunder_vars:
             yield _render_attr_variable(attr, config)
         if dunder_vars and dunder_methods:
@@ -300,8 +290,7 @@ def _retrieve_caller_info() -> Iterable[str]:
             frameinfo = inspect.getframeinfo(frame)
             if frameinfo.code_context:
                 code = '\n'.join(frameinfo.code_context).strip()
-                yield f'{STYLE_BRIGHT_BLUE}caller expression:{RESET} {code}'
-                yield f'{STYLE_BRIGHT_BLUE}caller file:{RESET} {frameinfo.filename}:{frameinfo.lineno}'
+                yield f'{{"caller_expression": {repr(code)}, "caller_file": {frameinfo.filename}:{frameinfo.lineno}}}'
         return None
     finally:
         del frame
