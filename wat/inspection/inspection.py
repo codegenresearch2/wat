@@ -177,11 +177,11 @@ def _format_value(value: Any, indent: int = 0) -> str:
     if isinstance(value, str):
         return f"'{value}'"
     if value is None:
-        return 'None'
+        return f'{STYLE_MAGENTA}None{RESET}'
     if value is True:
-        return 'True'
+        return f'{STYLE_BRIGHT_GREEN}True{RESET}'
     if value is False:
-        return 'False'
+        return f'{STYLE_BRIGHT_RED}False{RESET}'
     if isinstance(value, (int, float)):
         return str(value)
     if isinstance(value, dict):
