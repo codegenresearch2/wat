@@ -1,4 +1,4 @@
-from typing import List, Optional, Iterable, Type, Any
+from typing import List, Optional, Iterable, Type, Any, Union
 import inspect
 import os
 import re
@@ -32,7 +32,7 @@ class InspectConfig:
 class InspectAttribute:
     name: str
     value: Any
-    type_: Type
+    type: Type
     callable: bool
     dunder: bool
     private: bool
@@ -111,7 +111,7 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
         yield InspectAttribute(
             name=key,
             value=value,
-            type_=type(value),
+            type=type(value),
             callable=_callable,
             dunder=dunder,
             private=private,
@@ -153,7 +153,7 @@ def _get_doc(obj, long: bool) -> str:
 
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type_)
+    type_str = _format_type(attr.type)
     return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute) -> str:
