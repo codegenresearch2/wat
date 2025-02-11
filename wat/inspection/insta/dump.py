@@ -3,28 +3,27 @@ from pathlib import Path
 import re
 import zlib
 import sys
-from typing import List, Callable, Any
 
 def _is_in_quote(line: str, index: int) -> bool:
     """Helper function to check if a character is within quotes."""
     quotes = ['"', "'"]
     while index >= 0:
         if line[index] in quotes:
-            return line[index]
+            return True
         index -= 1
-    return None
+    return False
 
 def _remove_comments(line: str) -> str:
     """Remove comments from a single line of code."""
     comment_start = line.find('  # ')
-    if comment_start != -1:
+    if comment_start != -1 and not _is_in_quote(line, comment_start):
         return line[:comment_start]
     return line
 
 def minify_code(text: str) -> str:
     """Minify the given code by removing comments and unnecessary spaces."""
     lines = text.splitlines()
-    lines = [line for line in lines if line.strip()]  # Remove empty lines
+    lines = [line.strip() for line in lines if line.strip()]  # Remove empty lines and strip whitespace
     lines = [_remove_comments(line) for line in lines]
     
     # Remove type hints and other patterns
