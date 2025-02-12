@@ -3,7 +3,6 @@ from pathlib import Path
 import re
 import sys
 import zlib
-from typing import List
 
 def _is_in_quote(line: str, index: int) -> bool:
     """Check if the character at the given index is within quotes."""
@@ -138,7 +137,7 @@ def dump_snippet(filename: str) -> str:
         encoded_text = encode_text(minified_text)
         return encoded_text
     except Exception as e:
-        print(f"An error occurred: {e}")
+        # Do not print the error message but rather return an empty string
         return ""
 
 if __name__ == '__main__':
