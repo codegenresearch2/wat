@@ -14,7 +14,7 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         assert old_code in content, f'current Insta-Load code not found in {dst_filename}'
         replaced_content = content.replace(old_code, new_code)
         replaced_contents.append(replaced_content)
-        assert new_code in replaced_content, f'new code not found exactly once in {dst_filename}'
+        assert replaced_content.count(new_code) == 1, f'new code not found exactly once in {dst_filename}'
 
     if old_code == new_code:
         print('Insta-Load code is up to date')
