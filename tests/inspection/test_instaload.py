@@ -7,8 +7,8 @@ from wat.inspection.insta.instaload import code
 from tests.asserts import assert_multiline_match, StdoutCap
 
 def test_load_instaload_snippet():
-    compressed_and_encoded_snippet = code
-    snippet = zlib.decompress(base64.b64decode(compressed_and_encoded_snippet)).decode()
+    code = compressed_and_encoded_snippet
+    snippet = zlib.decompress(base64.b64decode(code)).decode()
     assert '\nwat=Wat()\n' in snippet
     
     exec(snippet, globals())
