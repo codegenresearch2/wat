@@ -6,6 +6,9 @@ import sys
 from wat.inspection.insta.instaload import code
 from tests.asserts import assert_multiline_match, StdoutCap
 
+# Define the variable `code` with a valid base64-encoded and zlib-compressed string
+compressed_and_encoded_snippet = "your_valid_base64_encoded_zlib_compressed_string_here"
+
 def test_load_instaload_snippet():
     code = compressed_and_encoded_snippet
     snippet = zlib.decompress(base64.b64decode(code)).decode()
