@@ -153,35 +153,39 @@ def _get_doc(obj, long: bool) -> Optional[str]:
         return _shorten_string(doc)
 
 
-def _format_dict_value(dic: Dict, indent: int = 4) -> str:
-    if indent > 30:
-        return 'ERROR: too deeply nested'
-    lines = []
-    indentation = ' ' * indent
-    for key, value in dic.items():
-        key_str = _format_value(key, indent)
-        value_str = _format_value(value, indent)
-        lines.append(f'{indentation}{key_str}: {value_str},')
-    if lines:
-        middle_lines = '\n'.join(lines)
-        return '{' + middle_lines + '\n' + (' ' * (indent - 4)) + '}'
-    else:
-        return '{}'
+def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
+    for attr in attributes:
+        if attr.private and not config.dunder:
+            continue
+        if attr.callable:
+            yield _render_attr_method(attr)
+        else:
+            yield _render_attr_variable(attr, config)
 
 
-def _format_list_value(lst: List, indent: int = 4) -> str:
-    if indent > 30:
-        return 'ERROR: too deeply nested'
-    lines = []
-    indentation = ' ' * indent
-    for value in lst:
-        value_str = _format_value(value, indent)
-        lines.append(f'{indentation}{value_str},')
-    if lines:
-        middle_lines = '\n'.join(lines)
-        return '[' + middle_lines + '\n' + (' ' * (indent - 4)) + ']'
+def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
+    value_str = _format_short_value(attr.value, long=config.long)
+    type_str = _format_type(attr.type)
+    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
+
+
+def _render_attr_method(attr: InspectAttribute) -> str:
+    if not attr.signature:
+        return f'  {attr.name}(…)'
+    if attr.doc:
+        if attr.doc.count('\n') == 0:
+            return f'  {attr.signature} {STYLE_GRAY}# {attr.doc}{RESET}'
+        else:
+            return f'  {attr.signature}:\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
     else:
-        return '[]'
+        return f'  {attr.signature}'
+
+
+def _format_short_value(value, long: bool) -> str:
+    value_str = _format_value(value)
+    if long:
+        return value_str
+    return _shorten_string(value_str)
 
 
 def _format_value(value, indent: int = 0) -> str:
@@ -204,6 +208,38 @@ def _format_value(value, indent: int = 0) -> str:
     if angle_bracket_match:
         return f'<{angle_bracket_match.group(1)}>'
     return str_val
+
+
+def _format_dict_value(dic: Dict, indent: int) -> str:
+    if indent > 30:
+        return 'ERROR: too deeply nested'
+    lines = []
+    indentation = '    ' * indent
+    for key, value in dic.items():
+        key_str = _format_value(key, indent)
+        value_str = _format_value(value, indent)
+        lines.append(f'{indentation}{key_str}: {value_str},')
+    if lines:
+        small_indent = '    ' * (indent-1)
+        middle_lines = '\n'.join(lines)
+        return f'{{{middle_lines}\n{small_indent}}}'
+    else:
+        return '{}'
+
+
+def _format_list_value(lst: List, indent: int) -> str:
+    if indent > 30:
+        return 'ERROR: too deeply nested'
+    lines = []
+    indentation = '    ' * indent
+    for value in lst:
+        value_str = _format_value(value, indent)
+        lines.append(f'{indentation}{value_str},')
+    if lines:
+        middle_lines = '\n'.join(lines)
+        return f'[{middle_lines}]'
+    else:
+        return '[]'
 
 
 def _format_type(type_: Type) -> str:
