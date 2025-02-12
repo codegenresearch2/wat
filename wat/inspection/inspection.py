@@ -55,34 +55,38 @@ def inspect_format(
 
 def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     if isinstance(obj, str):
-        yield f'{{"value": {repr(obj)}, "type": {type(obj).__name__}}}'
+        yield f'value: {obj}'
+        yield f'type: {type(obj).__name__}'
     elif obj is None:
-        yield f'{{"value": None, "type": {type(None).__name__}}}'
+        yield 'value: None'
+        yield 'type: NoneType'
     elif isinstance(obj, (int, float)):
-        yield f'{{"value": {obj}, "type": {type(obj).__name__}}}'
+        yield f'value: {obj}'
+        yield f'type: {type(obj).__name__}'
     elif isinstance(obj, dict):
         yield _format_dict_value(obj)
     elif isinstance(obj, list):
         yield _format_list_value(obj)
     else:
-        yield f'{{"value": {repr(obj)}, "type": {type(obj).__name__}}}'
+        yield f'value: {repr(obj)}'
+        yield f'type: {type(obj).__name__}'
 
     if callable(obj):
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj)
-        yield f'{{"signature": {signature}}}'
+        yield f'signature: {signature}'
 
     if config.caller:
         yield from _retrieve_caller_info()
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
-        yield f'{{"doc": {repr(doc)}}}'
+        yield f'doc: {doc}'
 
     if config.code and (inspect.isclass(obj) or callable(obj)):
         source = _get_source_code(obj)
         if source:
-            yield f'{{"source_code": {repr(source)}}}'
+            yield f'source code: {source}'
 
     if not config.short:
         attributes = sorted(_iter_attributes(obj, config), key=lambda attr: attr.name)
@@ -149,68 +153,35 @@ def _get_doc(obj, long: bool) -> Optional[str]:
         return _shorten_string(doc)
 
 
-def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
-    public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
-    private_vars = [a for a in attributes if a.private and not a.callable]
-    dunder_vars = [a for a in attributes if a.dunder and not a.callable]
-    public_methods = [a for a in attributes if not a.private and not a.dunder and a.callable]
-    private_methods = [a for a in attributes if a.private and a.callable]
-    dunder_methods = [a for a in attributes if a.dunder and a.callable]
-
-    if public_vars or public_methods:
-        yield ''
-        yield 'Public attributes:'
-        for attr in public_vars:
-            yield _render_attr_variable(attr, config)
-        if public_vars and public_methods:
-            yield ''
-        for attr in public_methods:
-            yield _render_attr_method(attr)
-    
-    if private_vars or private_methods:
-        yield ''
-        yield 'Private attributes:'
-        for attr in private_vars:
-            yield _render_attr_variable(attr, config)
-        if private_vars and private_methods:
-            yield ''
-        for attr in private_methods:
-            yield _render_attr_method(attr)
-
-    if config.dunder and (dunder_vars or dunder_methods):
-        yield ''
-        yield 'Dunder attributes:'
-        for attr in dunder_vars:
-            yield _render_attr_variable(attr, config)
-        if dunder_vars and dunder_methods:
-            yield ''
-        for attr in dunder_methods:
-            yield _render_attr_method(attr)
-
-
-def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
-    value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type)
-    return f'  {STYLE_BRIGHT_YELLOW}{attr.name}{STYLE_YELLOW}: {type_str} = {value_str}'
-
-
-def _render_attr_method(attr: InspectAttribute) -> str:
-    if not attr.signature:
-        return f'  {attr.name}(…)'
-    if attr.doc:
-        if attr.doc.count('\n') == 0:
-            return f'  {attr.signature} {STYLE_GRAY}# {attr.doc}{RESET}'
-        else:
-            return f'  {attr.signature}:\n{STYLE_GRAY}"""\n{attr.doc}\n"""{RESET}'
+def _format_dict_value(dic: Dict, indent: int = 4) -> str:
+    if indent > 30:
+        return 'ERROR: too deeply nested'
+    lines = []
+    indentation = ' ' * indent
+    for key, value in dic.items():
+        key_str = _format_value(key, indent)
+        value_str = _format_value(value, indent)
+        lines.append(f'{indentation}{key_str}: {value_str},')
+    if lines:
+        middle_lines = '\n'.join(lines)
+        return '{' + middle_lines + '\n' + (' ' * (indent - 4)) + '}'
     else:
-        return f'  {attr.signature}'
+        return '{}'
 
 
-def _format_short_value(value, long: bool) -> str:
-    value_str = _format_value(value)
-    if long:
-        return value_str
-    return _shorten_string(value_str)
+def _format_list_value(lst: List, indent: int = 4) -> str:
+    if indent > 30:
+        return 'ERROR: too deeply nested'
+    lines = []
+    indentation = ' ' * indent
+    for value in lst:
+        value_str = _format_value(value, indent)
+        lines.append(f'{indentation}{value_str},')
+    if lines:
+        middle_lines = '\n'.join(lines)
+        return '[' + middle_lines + '\n' + (' ' * (indent - 4)) + ']'
+    else:
+        return '[]'
 
 
 def _format_value(value, indent: int = 0) -> str:
@@ -225,44 +196,14 @@ def _format_value(value, indent: int = 0) -> str:
     if isinstance(value, (int, float)):
         return str(value)
     if isinstance(value, dict):
-        return _format_dict_value(value, indent=indent+1)
+        return _format_dict_value(value, indent)
     if isinstance(value, list):
-        return _format_list_value(value, indent=indent+1)
+        return _format_list_value(value, indent)
     str_val = str(value)
     angle_bracket_match = re.fullmatch(r'<(.*)>', str_val)
     if angle_bracket_match:
         return f'<{angle_bracket_match.group(1)}>'
     return str_val
-
-
-def _format_dict_value(dic: Dict, indent: int) -> str:
-    if indent > 30:
-        return 'ERROR: too deeply nested'
-    lines = []
-    indentation = '    ' * indent
-    for key, value in dic.items():
-        key_str = _format_value(key, indent)
-        value_str = _format_value(value, indent)
-        lines.append(f'{indentation}{key_str}: {value_str},')
-    if lines:
-        small_indent = '    ' * (indent-1)
-        middle_lines = '\n'.join(lines)
-        return f'{{{middle_lines}\n{small_indent}}}'
-    else:
-        return '{}'
-
-
-def _format_list_value(lst: List, indent: int) -> str:
-    lines = []
-    for value in lst:
-        value_str = _format_value(value, indent)
-        lines.append('    ' * indent + f'{value_str},')
-    if lines:
-        small_indent = '    ' * (indent-1)
-        middle_lines = '\n'.join(lines)
-        return f'[{middle_lines}\n{small_indent}]'
-    else:
-        return '[]'
 
 
 def _format_type(type_: Type) -> str:
@@ -290,7 +231,8 @@ def _retrieve_caller_info() -> Iterable[str]:
             frameinfo = inspect.getframeinfo(frame)
             if frameinfo.code_context:
                 code = '\n'.join(frameinfo.code_context).strip()
-                yield f'{{"caller_expression": {repr(code)}, "caller_file": {frameinfo.filename}:{frameinfo.lineno}}}'
+                yield f'caller expression: {code}'
+                yield f'caller file: {frameinfo.filename}:{frameinfo.lineno}'
         return None
     finally:
         del frame
