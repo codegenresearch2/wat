@@ -132,7 +132,7 @@ def _get_callable_signature(name: str, obj) -> Optional[str]:
         prefix = 'def '
     else:
         prefix = ''
-    return f'{prefix}{name}{_signature}'
+    return f'{prefix}{name}({_signature})'
 
 
 def _get_source_code(obj) -> Optional[str]:
