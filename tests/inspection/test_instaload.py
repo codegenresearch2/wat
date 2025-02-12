@@ -7,7 +7,7 @@ from tests.asserts import assert_multiline_match, StdoutCap
 
 def test_load_instaload_snippet():
     snippet = zlib.decompress(base64.b64decode(code)).decode()
-    assert '\nwat=Wat()\n' in snippet  # Removed spaces around the equals sign
+    assert '\nwat=Wat()\n' in snippet  # Ensured no spaces around the equals sign
     
     exec(snippet, globals())
     with StdoutCap() as capture:
