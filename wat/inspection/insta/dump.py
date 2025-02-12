@@ -3,6 +3,7 @@ from pathlib import Path
 import re
 import zlib
 import sys
+from typing import List
 
 def _is_in_quote(line: str, index: int) -> bool:
     """Helper function to check if a character is within quotes."""
