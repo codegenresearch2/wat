@@ -25,19 +25,19 @@ def minify_code(text: str) -> str:
     Minifies the given Python code by removing comments and unnecessary whitespace.
     """
     # Remove comments
-    text = re.sub(r'  # .+$', '', text)
+    text = re.sub(r'#.*', '', text)
     
     # Remove type hints and unnecessary spaces
-    text = re.sub(r'\) -> \'Wat\':$', '):', text)
-    text = re.sub(r'\) -> Union\[.+\]:$', '):', text)
-    text = re.sub(r'\) -> str:$', '):', text)
-    text = re.sub(r'\) -> bool:$', '):', text)
-    text = re.sub(r'\) -> Optional\[.+\]:$', '):', text)
-    text = re.sub(r'\) -> Dict\[.+\]:$', '):', text)
-    text = re.sub(r'\) -> Iterable\[.+\]:$', '):', text)
+    text = re.sub(r'\) -> \'Wat\':', '):', text)
+    text = re.sub(r'\) -> Union\[.+\]:', '):', text)
+    text = re.sub(r'\) -> str:', '):', text)
+    text = re.sub(r'\) -> bool:', '):', text)
+    text = re.sub(r'\) -> Optional\[.+\]:', '):', text)
+    text = re.sub(r'\) -> Dict\[.+\]:', '):', text)
+    text = re.sub(r'\) -> Iterable\[.+\]:', '):', text)
     text = re.sub(r': Dict(\[.+\])?', '', text)
     text = re.sub(r': List(\[.+\])?', '', text)
-    text = re.sub(r': Type)', ')')
+    text = re.sub(r': Type\)', ')', text)
     text = re.sub(r'= ', '=', text)
     text = re.sub(r', ', ',', text)
     text = re.sub(r' \(', '(', text)
