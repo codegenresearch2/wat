@@ -418,7 +418,7 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
                 return self.inspect(other=None)
             self._config[name] = True
             return self
-        else:
-            raise AttributeError(f"Unknown attribute: {name}")
-
-wat = Wat()
+        elif name == 'locals':
+            return self._print_variables(_list_local_variables(), 'Local variables')
+        elif name == 'globals':
+            return self._print_
