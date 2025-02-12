@@ -13,16 +13,16 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         print('Insta-Load code is up to date')
         return
     
-    replaced_contents = []
+    replaced_contents: list[str] = []
     for dst_filename in dst_filenames:
         content = Path(dst_filename).read_text()
         assert old_code in content, f'Cannot find current Insta-Load code in {dst_filename}'
         assert content.count(old_code) == 1, 'Old Insta-Load code appears more than once in the content'
         replaced_content = content.replace(old_code, new_code)
-        replaced_contents.append((dst_filename, replaced_content))
+        replaced_contents.append(replaced_content)
     
-    for dst_filename, replaced_content in replaced_contents:
-        Path(dst_filename).write_text(replaced_content)
+    for i, dst_filename in enumerate(dst_filenames):
+        Path(dst_filename).write_text(replaced_contents[i])
         print(f'Code replaced in {dst_filename}')
 
 
