@@ -3,13 +3,15 @@ from pathlib import Path
 import re
 import sys
 import zlib
+from typing import List, Optional, Dict, Iterable, Union, Any, Type
 
 
 def dump_snippet(filename: str) -> str:
     text: str = Path(filename).read_text()
     lines = text.splitlines()
     lines = [line for line in lines if line.strip()]  # remove empty lines
-    lines = [re.sub(r'  # (.+)$', '', line) for line in lines]  # trim comments
+    comment_pattern = re.compile(r'  # (.+)$')
+    lines = [comment_pattern.sub('', line) for line in lines]  # trim comments
     lines = [minify_code(line) for line in lines]
     text = '\n'.join(lines)
     # Path('wat/inspection/insta/.inspection_minified.py').write_text(text)  # Commented line for consistency
