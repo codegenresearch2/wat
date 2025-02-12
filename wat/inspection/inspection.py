@@ -18,8 +18,8 @@ class InspectConfig:
 class InspectAttribute:
     name: str
     value: Any
-    type_: Type
-    callable_: bool
+    type: Type
+    callable: bool
     dunder: bool
     private: bool
     signature: Optional[str]
@@ -139,7 +139,7 @@ def _iter_attributes(obj, config: InspectConfig) -> Iterable[InspectAttribute]:
         signature = _get_callable_signature(key, value) if _callable else None
         doc = _get_doc(value, long=config.long) if _callable else None
         yield InspectAttribute(
-            name=key, value=value, type_=type(value), callable_=_callable, dunder=dunder,
+            name=key, value=value, type=type(value), callable=_callable, dunder=dunder,
             private=private, signature=signature, doc=doc,
         )
 
@@ -174,7 +174,7 @@ def _get_doc(obj, long: bool) -> Optional[str]:
 
 def _render_attr_variable(attr: InspectAttribute, config: InspectConfig) -> str:
     value_str = _format_short_value(attr.value, long=config.long)
-    type_str = _format_type(attr.type_)
+    type_str = _format_type(attr.type)
     return f'  {Style.VARIABLE}{attr.name}{Style.CODE}: {type_str} = {value_str}'
 
 def _render_attr_method(attr: InspectAttribute, config: InspectConfig) -> str:
@@ -275,12 +275,12 @@ def _shorten_string(text: str) -> str:
     return first_line + RESET
 
 def _render_attrs_section(attributes: List[InspectAttribute], config: InspectConfig) -> Iterable[str]:
-    public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable_]
-    private_vars = [a for a in attributes if a.private and not a.callable_]
-    dunder_vars = [a for a in attributes if a.dunder and not a.callable_]
-    public_methods = [a for a in attributes if not a.private and not a.dunder and a.callable_]
-    private_methods = [a for a in attributes if a.private and a.callable_]
-    dunder_methods = [a for a in attributes if a.dunder and a.callable_]
+    public_vars = [a for a in attributes if not a.private and not a.dunder and not a.callable]
+    private_vars = [a for a in attributes if a.private and not a.callable]
+    dunder_vars = [a for a in attributes if a.dunder and not a.callable]
+    public_methods = [a for a in attributes if not a.private and not a.dunder and a.callable]
+    private_methods = [a for a in attributes if a.private and a.callable]
+    dunder_methods = [a for a in attributes if a.dunder and a.callable]
 
     if public_vars or public_methods:
         yield ''
@@ -424,4 +424,4 @@ Call {STYLE_CODE}wat.globals{RESET} to inspect global variables.'''
         output = '\n'.join(line for line in lines if line is not None)
         return self._display_output(output)
 
-    def __
+    def __trued
