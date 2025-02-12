@@ -56,7 +56,7 @@ def inspect_format(obj, *, short: bool = False, dunder: bool = False, nodocs: bo
 
 def _produce_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
     str_value = _format_value(obj)
-    yield str_value
+    yield f'value: {str_value}'
 
     str_type = _format_type(type(obj))
     yield f'type: {str_type}'
