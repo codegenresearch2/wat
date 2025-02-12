@@ -46,6 +46,12 @@ def minify_code(text: str) -> str:
         text = re.sub(r'\' ,', '\'', text)
         text = re.sub(r' = ', '=', text)
         text = re.sub(r', ', ',', text)
+        # Commented lines from gold code
+        text = re.sub(r' = ', '=', text)
+        text = re.sub(r', ', ',', text)
+        text = re.sub(r'\' ,', '\'', text)
+        text = re.sub(r', \'', ',\'', text)
+        text = re.sub(r'= \'', '=\'', text)
     if not text.endswith(': str'):
         text = text.replace(': str', '')
     if text.count(' = ') == 1:
