@@ -40,6 +40,11 @@ def minify_code(text: str) -> str:
     text = re.sub(r': int = ', '=', text)
     text = re.sub(r': List\[str\] = ', '=', text)
     text = re.sub(r': str, ', ',', text)
+    text = re.sub(r': Optional\[.+\]:', '', text)  # Remove optional type hints
+    text = re.sub(r': Dict\[.+\]:', '', text)  # Remove dict type hints
+    text = re.sub(r': Iterable\[.+\]:', '', text)  # Remove iterable type hints
+    text = re.sub(r': Type\[.+\]:', '', text)  # Remove type type hints
+    text = re.sub(r'from typing import .+', '', text)  # Remove import statements
     
     return text
 
