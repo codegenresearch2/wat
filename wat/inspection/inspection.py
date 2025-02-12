@@ -25,39 +25,22 @@ class InspectAttribute:
     signature: Optional[str]
     doc: Optional[str]
 
-RESET = '\033[0m'
-STYLE_BAR = '\033[0;34m'  # blue
-STYLE_TRAIT = '\033[1;34m'  # bright blue
-STYLE_HEADER = '\033[1;37m'  # bright white
-STYLE_REPR = '\033[1;37m'  # bright white
-STYLE_STRING = '\033[0;32m'  # green
-STYLE_NUMBER = '\033[0;31m'  # red
-STYLE_NONE = '\033[0;35m'  # magenta
-STYLE_TRUE = '\033[1;32m'  # bright green
-STYLE_FALSE = '\033[1;31m'  # bright red
-STYLE_DOCS = '\033[2;37m'  # gray
-STYLE_KEYWORD = '\033[0;34m'  # blue
-STYLE_CALLABLE = '\033[1;32m'  # bright green
-STYLE_SIGNATURE = '\033[0;32m'  # green
-STYLE_VARIABLE = '\033[1;33m'  # bright yellow
-STYLE_CODE = '\033[0;33m'  # yellow
-
 class Style:
-    BAR = STYLE_BAR
-    TRAIT = STYLE_TRAIT
-    HEADER = STYLE_HEADER
-    REPR = STYLE_REPR
-    STRING = STYLE_STRING
-    NUMBER = STYLE_NUMBER
-    NONE = STYLE_NONE
-    TRUE = STYLE_TRUE
-    FALSE = STYLE_FALSE
-    DOCS = STYLE_DOCS
-    KEYWORD = STYLE_KEYWORD
-    CALLABLE = STYLE_CALLABLE
-    SIGNATURE = STYLE_SIGNATURE
-    VARIABLE = STYLE_VARIABLE
-    CODE = STYLE_CODE
+    BAR = '\033[0;34m'  # blue
+    TRAIT = '\033[1;34m'  # bright blue
+    HEADER = '\033[1;37m'  # bright white
+    REPR = '\033[1;37m'  # bright white
+    STRING = '\033[0;32m'  # green
+    NUMBER = '\033[0;31m'  # red
+    NONE = '\033[0;35m'  # magenta
+    TRUE = '\033[1;32m'  # bright green
+    FALSE = '\033[1;31m'  # bright red
+    DOCS = '\033[2;37m'  # gray
+    KEYWORD = '\033[0;34m'  # blue
+    CALLABLE = '\033[1;32m'  # bright green
+    SIGNATURE = '\033[0;32m'  # green
+    VARIABLE = '\033[1;33m'  # bright yellow
+    CODE = '\033[0;33m'  # yellow
 
 def inspect_format(
     obj: Any,
@@ -424,4 +407,12 @@ Call {STYLE_CODE}wat.globals{RESET} to inspect global variables.'''
         output = '\n'.join(line for line in lines if line is not None)
         return self._display_output(output)
 
-    def __trued
+    def __truediv__(self, other): return self.inspect(other)  # /
+    def __add__(self, other): return self.inspect(other)  # +
+    def __lshift__(self, other): return self.inspect(other)  # <<
+    def __rshift__(self, other): return self.inspect(other)  # >>
+    def __or__(self, other): return self.inspect(other)  # wat |
+    def __ror__(self, other): return self.inspect(other)  # | wat
+    def __lt__(self, other): return self.inspect(other)  # <
+
+    def __getattr__(self, name) -> Union['Wat', str,
