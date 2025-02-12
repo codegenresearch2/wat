@@ -27,7 +27,7 @@ def minify_code(text: str) -> str:
     # Remove comments
     text = re.sub(r'  # .+$', '', text)
     
-    # Remove type hints
+    # Remove type hints and unnecessary spaces
     text = re.sub(r'\) -> \'Wat\':$', '):', text)
     text = re.sub(r'\) -> Union\[.+\]:$', '):', text)
     text = re.sub(r'\) -> str:$', '):', text)
@@ -38,15 +38,11 @@ def minify_code(text: str) -> str:
     text = re.sub(r': Dict(\[.+\])?', '', text)
     text = re.sub(r': List(\[.+\])?', '', text)
     text = re.sub(r': Type)', ')')
-    
-    # Remove unnecessary spaces
     text = re.sub(r'= ', '=', text)
     text = re.sub(r', ', ',', text)
     text = re.sub(r' \(', '(', text)
     text = re.sub(r' \)', ')', text)
     text = re.sub(r' :', ':', text)
-    
-    # Remove final type hint if present
     if not text.endswith(': str'):
         text = re.sub(r': str$', '', text)
     
