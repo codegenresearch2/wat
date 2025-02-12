@@ -6,27 +6,29 @@ from wat.inspection.insta.instaload import code
 
 
 def _regenerate(src_filename: str, dst_filenames: list[str]):
-    old_code: str = code.decode()
-    new_code: str = dump_snippet(src_filename)
+    old_code_length = len(code.decode())
+    new_code = dump_snippet(src_filename)
+    new_code_length = len(new_code)
+    print(f'Insta-Load code ({new_code_length} characters):\n{new_code}\n')
+    
     replaced_contents: list[str] = []
-    print(f'Insta-Load code ({len(new_code)} characters):\n{new_code}\n')
     
     for dst_filename in dst_filenames:
         content = Path(dst_filename).read_text()
-        assert content.count(old_code) == 1, f'cannot find current Insta-Load code in {dst_filename}'
-        replaced_content = content.replace(old_code, new_code)
+        assert content.count(code.decode()) == 1, f'cannot find current Insta-Load code in {dst_filename}'
+        replaced_content = content.replace(code.decode(), new_code)
         assert replaced_content.count(new_code) == 1
         replaced_contents.append(replaced_content)
 
-    if old_code == new_code:
+    if code.decode() == new_code:
         print('Insta-Load code is already up to date')
         return
 
     for i, dst_filename in enumerate(dst_filenames):
-        Path(dst_filenames[i]).write_text(replaced_contents[i])
-        print(f'Code replaced in {dst_filenames[i]}')
+        Path(dst_filename).write_text(replaced_contents[i])
+        print(f'Code replaced in {dst_filename}')
 
-    char_count_change = len(new_code) - len(old_code)
+    char_count_change = new_code_length - old_code_length
     print(f'Character count change: {"+" if char_count_change >= 0 else ""}{char_count_change} characters')
 
 
