@@ -23,8 +23,8 @@ def _regenerate(src_filename: str, dst_filenames: list[str]):
         return
 
     for i, dst_filename in enumerate(dst_filenames):
-        Path(dst_filename).write_text(replaced_contents[i])
-        print(f'Code replaced in {dst_filename}')
+        Path(dst_filenames[i]).write_text(replaced_contents[i])
+        print(f'Code replaced in {dst_filenames[i]}')
 
     char_count_change = len(new_code) - len(old_code)
     print(f'Character count change: {"+" if char_count_change >= 0 else ""}{char_count_change} characters')
