@@ -131,6 +131,9 @@ def dump_snippet(filename: str) -> str:
     """Minify the code from the given file and encode it."""
     try:
         text = Path(filename).read_text()
+        # Remove empty lines
+        lines = text.splitlines()
+        lines = [line for line in lines if line.strip()]
         minified_text = minify_code(text)
         encoded_text = encode_text(minified_text)
         return encoded_text
