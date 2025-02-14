@@ -54,9 +54,6 @@ def inspect_format(
 
 
 def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
-    if config.caller:
-        yield from _generate_caller_info()
-
     str_value = _format_value(obj)
     repr_value: str = repr(obj)
     if repr_value == str(obj) or repr_value == _strip_color(str_value):
@@ -81,6 +78,9 @@ def _yield_inspect_lines(obj, config: InspectConfig) -> Iterable[str]:
         name = getattr(obj, '__name__', '…')
         signature = _get_callable_signature(name, obj)
         yield f'{STYLE_BRIGHT_BLUE}signature:{RESET} {signature}'
+    
+    if config.caller:
+        yield from _retrieve_caller_info()
 
     doc = _get_doc(obj, long=True)
     if doc and not config.nodocs and callable(obj):
@@ -242,15 +242,15 @@ def _get_parent_types(type_: Type) -> Iterable[str]:
             yield _format_type(base_type)
 
 
-def _generate_caller_info() -> Iterable[str]:
+def _retrieve_caller_info() -> Iterable[str]:
     frame = _caller_stack_frame(6)
     if frame:
         frameinfo = inspect.getframeinfo(frame)
-        if frameinfo.filename:
-            yield f'{STYLE_BRIGHT_BLUE}caller file: {STYLE_YELLOW}{frameinfo.filename}:{STYLE_BRIGHT_YELLOW}{frameinfo.lineno}{RESET}'
         if frameinfo.code_context:
             code = '\n'.join(frameinfo.code_context).strip()
             yield f'{STYLE_BRIGHT_BLUE}caller expression:{RESET} {code}'
+        if frameinfo.filename:
+            yield f'{STYLE_BRIGHT_BLUE}caller file:{RESET} {frameinfo.filename}:{frameinfo.lineno}'
 
 
 def _shorten_string(text: str) -> str:
@@ -348,19 +348,7 @@ class Wat:
         return '<WAT Inspector object>'
     
     def _print_help(self):
-        text = f'''Try {STYLE_YELLOW}wat / object{RESET} or {STYLE_YELLOW}wat.modifiers / object{RESET} to inspect an {STYLE_YELLOW}object{RESET}. {STYLE_BRIGHT}Modifiers{RESET} are:
-  {STYLE_GREEN}.short{RESET} or {STYLE_GREEN}.s{RESET} to hide attributes (variables and methods)
-  {STYLE_GREEN}.dunder{RESET} to print dunder attributes
-  {STYLE_GREEN}.code{RESET} to print source code of a function, method or class
-  {STYLE_GREEN}.long{RESET} to print non-abbreviated values and documentation
-  {STYLE_GREEN}.nodocs{RESET} to hide documentation for functions and classes
-  {STYLE_GREEN}.caller{RESET} to show how and where the inspection was called
-  {STYLE_GREEN}.all{RESET} to include all information
-  {STYLE_GREEN}.ret{RESET} to return the inspected {STYLE_YELLOW}object{RESET}
-  {STYLE_GREEN}.str{RESET} to return the output string instead of printing
-  {STYLE_GREEN}.gray{RESET} to disable colorful output in the console
-Call {STYLE_YELLOW}wat.locals{RESET} or {STYLE_YELLOW}wat(){RESET} to inspect local variables.
-Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
+        text = f'''Try {STYLE_YELLOW}wat / object{RESET} or {STYLE_YELLOW}wat.modifiers / object{RESET} to inspect an {STYLE_YELLOW}object{RESET}. {STYLE_BRIGHT}Modifiers{RESET} are:\n  {STYLE_GREEN}.short{RESET} or {STYLE_GREEN}.s{RESET} to hide attributes (variables and methods)\n  {STYLE_GREEN}.dunder{RESET} to print dunder attributes\n  {STYLE_GREEN}.code{RESET} to print source code of a function, method or class\n  {STYLE_GREEN}.long{RESET} to print non-abbreviated values and documentation\n  {STYLE_GREEN}.nodocs{RESET} to hide documentation for functions and classes\n  {STYLE_GREEN}.caller{RESET} to show how and where the inspection was called\n  {STYLE_GREEN}.all{RESET} to include all information\n  {STYLE_GREEN}.ret{RESET} to return the inspected {STYLE_YELLOW}object{RESET}\n  {STYLE_GREEN}.str{RESET} to return the output string instead of printing\n  {STYLE_GREEN}.gray{RESET} to disable colorful output in the console\nCall {STYLE_YELLOW}wat.locals{RESET} or {STYLE_YELLOW}wat(){RESET} to inspect local variables.\nCall {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
         if not _color_enabled():
             text = _strip_color(text)
         print(text)
@@ -439,18 +427,4 @@ Call {STYLE_YELLOW}wat.globals{RESET} to inspect global variables.'''
         return new_wat
 
 
-RESET = '\033[0m'
-STYLE_BRIGHT = '\033[1m'
-STYLE_RED = '\033[0;31m'
-STYLE_BRIGHT_RED = '\033[1;31m'
-STYLE_GREEN = '\033[0;32m'
-STYLE_BRIGHT_GREEN = '\033[1;32m'
-STYLE_YELLOW = '\033[0;33m'
-STYLE_BRIGHT_YELLOW = '\033[1;33m'
-STYLE_BLUE = '\033[0;34m'
-STYLE_BRIGHT_BLUE = '\033[1;34m'
-STYLE_MAGENTA = '\033[0;35m'
-STYLE_CYAN = '\033[0;36m'
-STYLE_GRAY = '\033[2;37m'
-
-wat = Wat()
+RESET = '\033[0m
