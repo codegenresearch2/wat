@@ -19,8 +19,8 @@ install-local:
 	python -m pip install -e .
 
 test:
-	python -m coverage run --source wat -m pytest -vv --tb=short -ra --color=yes $(test)
-	python -m coverage report --show-missing --skip-empty --skip-covered
+	python -m coverage run --source wat -m pytest -vv -ra --color=no $(test)
+	
 
 clean:
 	rm -rf build/
